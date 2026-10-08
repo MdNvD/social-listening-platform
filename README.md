@@ -1,251 +1,192 @@
-Open-Source Social Listening Platform
-An open-source social listening platform that collects online mentions from multiple public sources and transforms them into actionable insights using relevance filtering, deduplication, sentiment analysis, topic classification, analytics, competitor comparison, alerts, and AI-assisted insights.
----
-Overview
-Businesses and developers often need to understand what people are saying about a product, brand, or technology across the internet.
-This project provides a centralized platform where users can search for a keyword such as:
-```text
+🤖 Open-Source Social Listening Platform
+
+An open-source social listening and mention analysis platform that collects online mentions from multiple public sources and transforms them into structured insights using relevance filtering, deduplication, sentiment analysis, topic classification, analytics, competitor comparison, alerts, scheduled monitoring, and AI-assisted insights.
+
+The platform provides a modern React dashboard backed by a FastAPI REST API and PostgreSQL database, with complete Docker Compose support.
+
+📌 Project Overview
+
+The Open-Source Social Listening Platform is designed to help users understand what people are saying online about a product, brand, technology, or keyword.
+
+A user enters a keyword such as:
+
 Samsung Galaxy S26
-```
-The platform collects relevant mentions from multiple sources, processes the collected content, stores the results in PostgreSQL, and presents the findings through an interactive React dashboard.
-Main workflow
-```text
-                    User Search
-                         │
-                         ▼
-                ┌─────────────────┐
-                │  Search Keyword  │
-                └────────┬────────┘
-                         │
-                         ▼
-              ┌─────────────────────┐
-              │   Data Collection   │
-              │                     │
-              │ RSS                 │
-              │ Hacker News         │
-              │ Stack Exchange      │
-              └──────────┬──────────┘
-                         │
-                         ▼
-              ┌─────────────────────┐
-              │ Data Normalization  │
-              └──────────┬──────────┘
-                         │
-                         ▼
-              ┌─────────────────────┐
-              │ Relevance Filtering │
-              └──────────┬──────────┘
-                         │
-                         ▼
-              ┌─────────────────────┐
-              │    Deduplication    │
-              └──────────┬──────────┘
-                         │
-                         ▼
-              ┌─────────────────────┐
-              │   NLP Processing    │
-              │                     │
-              │ Sentiment           │
-              │ Topic Classification│
-              └──────────┬──────────┘
-                         │
-                         ▼
-                ┌─────────────────┐
-                │   PostgreSQL    │
-                └────────┬────────┘
-                         │
-          ┌──────────────┼──────────────┐
-          ▼              ▼              ▼
-      Analytics     AI Insights    Competitors
-          │              │              │
-          └──────────────┼──────────────┘
-                         ▼
-                 React Dashboard
-```
----
-Features
-🔎 Social Listening
-Search for keywords and collect relevant mentions from multiple public sources.
-📰 Multi-Source Data Collection
-Currently supports:
-RSS feeds
-Hacker News
-Stack Exchange
-Configured RSS sources include:
-TechCrunch
-The Verge
-Ars Technica
-Android Authority
-🎯 Relevance Filtering
-Filters out unrelated content so that only mentions relevant to the searched keyword are processed.
-♻️ Deduplication
-Prevents duplicate mentions from being stored multiple times.
-The system considers factors such as:
-URL similarity
-Content similarity
-Product/model context
-😊 Sentiment Analysis
-Classifies mentions into:
-Positive
-Neutral
-Negative
-The system also stores sentiment confidence scores.
-🏷️ Topic Classification
-Automatically classifies mentions into topics such as:
-Pricing
-Features
-Competitors
-Security
-Other
-📊 Analytics
-Provides:
-Total mentions
-Sentiment distribution
-Topic distribution
-Source distribution
-Mentions over time
-First and latest mention timestamps
-🤖 AI-Assisted Insights
-Generates evidence-based insights from collected mentions, including:
-Summary
-Key themes
-Pain points
-Opportunities
-Recommended actions
-Supporting evidence
-The system also includes deterministic fallback logic when structured AI output is unavailable.
-⚔️ Competitor Comparison
-Compare multiple keywords/products using:
-Mention volume
-Sentiment
-Topics
-Sources
-Engagement
-Negative mentions
-Example:
-```text
-Samsung Galaxy S26
-        VS
-Google Pixel
-```
-🔔 Alerts
-Analyzes recent mention activity and detects changes in negative sentiment and mention patterns.
-⏰ Scheduled Monitoring
-Users can create scheduled keyword monitoring jobs with configurable intervals.
-Monitoring supports:
-Create
-Retrieve
-Update
-Pause
-Delete
-🔍 Mention Explorer
-Browse collected mentions with their:
-Source
-Title
-URL
-Sentiment
-Topic
-Confidence
-Engagement
-📚 Search History
-Previously performed searches can be retrieved and reviewed.
-🐳 Docker Support
-The complete application can run using Docker Compose.
----
-Technology Stack
-Frontend
-Technology	Purpose
-React	User interface
-Vite	Frontend development/build
-JavaScript	Application logic
-CSS	Styling
-ESLint	Code quality
-Backend
-Technology	Purpose
-Python	Backend language
-FastAPI	REST API framework
-Uvicorn	ASGI server
-SQLAlchemy	Database ORM
-Pydantic	Data validation
-Alembic	Database migrations
-Database
-Technology	Purpose
-PostgreSQL	Persistent data storage
+
+The platform collects relevant content from supported public sources such as RSS feeds, Hacker News, and Stack Exchange.
+
+The collected content then passes through a processing pipeline:
+
 Data Collection
-Source	Purpose
-RSS	News/article collection
-Hacker News	Technology discussions
-Stack Exchange	Community questions/discussions
-NLP / AI
+      ↓
+Normalization
+      ↓
+Relevance Filtering
+      ↓
+Deduplication
+      ↓
+Sentiment Analysis
+      ↓
+Topic Classification
+      ↓
+PostgreSQL
+      ↓
+Analytics / AI Insights / Competitor Analysis / Alerts
+      ↓
+React Dashboard
+
+✨ Features
+
+🔎 Keyword-based social listening
+
+📰 Multi-source data collection
+
+📡 RSS feed ingestion
+
+🟠 Hacker News ingestion
+
+💬 Stack Exchange ingestion
+
+🎯 Relevance filtering
+
+♻️ Mention deduplication
+
+😊 Sentiment analysis
+
+🏷️ Topic classification
+
+📊 Analytics dashboard
+
+🤖 AI-assisted insights
+
+⚔️ Competitor comparison
+
+🔔 Sentiment and activity alerts
+
+⏰ Scheduled keyword monitoring
+
+📋 Mention explorer
+
+📚 Search history
+
+🐘 PostgreSQL database
+
+⚡ FastAPI REST API
+
+⚛️ React + Vite frontend
+
+🐳 Docker Compose deployment
+
+🧪 Automated backend testing
+
+⭐ Key Highlights
+
+Supports multiple public data sources.
+
+Normalizes different source formats into a common mention structure.
+
+Filters irrelevant content before deeper processing.
+
+Removes duplicate mentions.
+
+Performs sentiment classification with confidence scores.
+
+Classifies mentions into meaningful topics.
+
+Provides source, sentiment, topic, and time-based analytics.
+
+Provides competitor comparison for multiple keywords.
+
+Includes scheduled monitoring for recurring searches.
+
+Generates evidence-based AI-assisted insights.
+
+Includes deterministic fallback logic when structured local LLM output is unavailable.
+
+Provides a complete Dockerized development environment.
+
+Backend automated test suite currently has 24/24 tests passing.
+
+🛠 Technology Stack
+
+Frontend
+
+React
+
+Vite
+
+JavaScript
+
+CSS
+
+Axios / REST API integration
+
+ESLint
+
+Backend
+
+Python
+
+FastAPI
+
+Uvicorn
+
+SQLAlchemy
+
+Pydantic
+
+Alembic
+
+Database
+
+PostgreSQL
+
+Data Collection
+
+RSS
+
+Hacker News
+
+Stack Exchange
+
+Configured RSS sources include:
+
+TechCrunch
+
+The Verge
+
+Ars Technica
+
+Android Authority
+
+NLP & AI
+
 Sentence Transformers
+
 Hugging Face Transformers
+
 Sentiment classification
+
 Embedding-based topic classification
+
 Local LLM / AI-assisted insight generation
+
 DevOps
+
 Docker
+
 Docker Compose
+
 Nginx
+
 Testing
+
 Pytest
----
-System Architecture
-```text
-┌─────────────────────────────────────────────────────────────┐
-│                         React Frontend                       │
-│                         Vite + JS                           │
-│                                                             │
-│ Dashboard | Mentions | Insights | Competitors | Alerts     │
-│ Monitoring | Search History                                │
-└───────────────────────────┬─────────────────────────────────┘
-                            │
-                            │ REST API
-                            ▼
-┌─────────────────────────────────────────────────────────────┐
-│                         FastAPI Backend                      │
-│                                                             │
-│ API Layer                                                   │
-│ ├── Searches                                                │
-│ ├── Mentions                                                │
-│ ├── Analytics                                               │
-│ ├── Insights                                                │
-│ ├── Competitors                                             │
-│ ├── Monitoring                                              │
-│ └── Alerts                                                  │
-│                                                             │
-│ Service Layer                                               │
-│ ├── Ingestion                                               │
-│ ├── Relevance                                               │
-│ ├── Deduplication                                           │
-│ ├── Sentiment                                               │
-│ ├── Topic Classification                                    │
-│ ├── Analytics                                               │
-│ ├── AI Insights                                             │
-│ └── Scheduler                                               │
-│                                                             │
-│ Collector Layer                                             │
-│ ├── RSS                                                     │
-│ ├── Hacker News                                             │
-│ └── Stack Exchange                                          │
-└───────────────────────────┬─────────────────────────────────┘
-                            │
-                            ▼
-                  ┌────────────────────┐
-                  │     PostgreSQL     │
-                  │                    │
-                  │ searches           │
-                  │ mentions           │
-                  │ mention_analysis   │
-                  └────────────────────┘
-```
-For a detailed architecture description, see `ARCHITECTURE.md`.
----
-Project Structure
-```text
+
+📂 Project Structure
+
 social-listening-platform/
 │
 ├── backend/
-│   │
 │   ├── app/
 │   │   ├── api/
 │   │   │   ├── alerts.py
@@ -257,10 +198,12 @@ social-listening-platform/
 │   │   │   └── searches.py
 │   │   │
 │   │   ├── collectors/
+│   │   │   ├── base.py
 │   │   │   ├── hackernews.py
+│   │   │   ├── models.py
+│   │   │   ├── reddit.py
 │   │   │   ├── rss.py
-│   │   │   ├── stackexchange.py
-│   │   │   └── models.py
+│   │   │   └── stackexchange.py
 │   │   │
 │   │   ├── database/
 │   │   │   ├── connection.py
@@ -281,6 +224,8 @@ social-listening-platform/
 │   │       ├── processing_service.py
 │   │       ├── relevance_service.py
 │   │       ├── scheduler_service.py
+│   │       ├── search_persistence_service.py
+│   │       ├── search_recovery_service.py
 │   │       ├── search_service.py
 │   │       ├── sentiment_service.py
 │   │       └── topic_service.py
@@ -288,11 +233,6 @@ social-listening-platform/
 │   ├── alembic/
 │   ├── evaluation/
 │   ├── tests/
-│   │   ├── test_deduplication.py
-│   │   ├── test_relevance.py
-│   │   ├── test_sentiment.py
-│   │   └── test_topic.py
-│   │
 │   ├── create_tables.py
 │   ├── pytest.ini
 │   ├── requirements.txt
@@ -305,240 +245,287 @@ social-listening-platform/
 │   │   ├── context/
 │   │   ├── pages/
 │   │   └── services/
-│   ├── package.json
 │   ├── Dockerfile
-│   └── nginx.conf
+│   ├── nginx.conf
+│   ├── package.json
+│   └── vite.config.js
 │
-├── docker-compose.yml
 ├── .env.example
 ├── .gitignore
 ├── ARCHITECTURE.md
+├── docker-compose.yml
 └── README.md
-```
----
-API
-The backend exposes REST APIs for the major platform features.
-Health
-```http
-GET /api/health
-```
-Searches
-```http
-POST /api/searches
-GET /api/searches/{search_id}
-```
-Mentions
-```http
-GET /api/searches/{search_id}/mentions
-```
-Analytics
-```http
-GET /api/searches/{search_id}/analytics
-```
-AI Insights
-```http
-GET /api/searches/{search_id}/insights
-```
-Competitors
-```http
-POST /api/competitors/compare
-```
-Monitoring
-```http
-GET    /api/monitorings
-POST   /api/monitorings
-GET    /api/monitorings/{monitoring_id}
-PATCH  /api/monitorings/{monitoring_id}
-DELETE /api/monitorings/{monitoring_id}
-```
-Alerts
-```http
-GET /api/searches/{search_id}/alerts
-```
-Interactive API documentation is available through FastAPI Swagger UI:
-```text
-http://127.0.0.1:8000/docs
-```
----
-Running the Project
-Prerequisites
-Install:
-Python 3.13+
-Node.js
-npm
-PostgreSQL
-Docker Desktop (optional, for containerized deployment)
----
-Option 1 — Run with Docker
-This is the recommended way to run the complete application.
-From the project root:
-```bash
+
+🚀 Installation
+
+Clone Repository
+
+git clone https://github.com/MdNvD/social-listening-platform.git
+
+cd social-listening-platform
+
+🐳 Run with Docker
+
+Docker Compose is the recommended way to run the complete application.
+
 docker compose up -d --build
-```
-Check running containers:
-```bash
+
+Check the running containers:
+
 docker compose ps
-```
+
 Stop the application:
-```bash
+
 docker compose down
-```
+
 Application URLs
+
 Frontend:
-```text
+
 http://localhost:8090
-```
+
 Backend:
-```text
+
 http://127.0.0.1:8000
-```
-Swagger API documentation:
-```text
+
+FastAPI Swagger documentation:
+
 http://127.0.0.1:8000/docs
-```
----
-Option 2 — Run Manually
-Backend
-Navigate to the backend:
-```powershell
+
+PostgreSQL is exposed locally through port:
+
+5434
+
+💻 Manual Installation
+
+Backend Setup
+
 cd backend
-```
-Create a virtual environment:
-```powershell
+
 python -m venv venv
-```
-Activate it:
-```powershell
-venv\Scripts\Activate.ps1
-```
-Install dependencies:
-```powershell
+
+venv\Scripts\activate
+
 pip install -r requirements.txt
-```
-Configure the environment variables using `.env.example`.
-Start FastAPI:
-```powershell
-uvicorn app.main:app --reload
-```
-Backend:
-```text
-http://127.0.0.1:8000
-```
-Swagger:
-```text
-http://127.0.0.1:8000/docs
-```
----
-Frontend
-Open another terminal:
-```powershell
-cd frontend
-```
-Install dependencies:
-```powershell
-npm install
-```
-Start the development server:
-```powershell
-npm run dev
-```
-Frontend:
-```text
-http://localhost:5173
-```
----
-Environment Configuration
-Environment-specific configuration should be stored in `.env` files.
-Do not commit secrets or local environment configuration.
-Use:
-```text
+
+Configure your environment using the provided:
+
 .env.example
-```
-as the configuration template.
-The repository ignores:
-```text
-.env
-*.env
-venv/
-.venv/
-node_modules/
-dist/
-__pycache__/
-.pytest_cache/
-```
----
-Database
-The application uses PostgreSQL.
-The main database entities include:
-```text
-searches
-mentions
-mention_analysis
-```
-Database schema changes are managed using Alembic migrations.
-Example:
-```bash
-alembic upgrade head
-```
----
-Testing
-The official automated backend tests are located in:
-```text
-backend/tests/
-```
-Run the complete test suite:
-```powershell
-cd backend
-pytest -v
-```
-Current test result:
-```text
-24 passed
-```
-The tests cover:
-Deduplication
-Same URL detection
-Same content detection
-Product/model distinction
-Galaxy model extraction
-Empty existing mentions
-Relevance
-Relevant product titles
-Google Pixel relevance
-Wrong model detection
-Incidental mentions
-Empty keyword/content handling
-Sentiment
-Positive classification
-Negative classification
-Neutral classification
-Signal-based correction
-Confidence-based predictions
-Topic Classification
-Security
-Pricing
-Competitor comparison
-Complaints
-General/Other classification
-Additional development and evaluation scripts are stored in:
-```text
-backend/evaluation/
-```
----
-Example Search
-Example keyword:
-```text
-Samsung Galaxy S26
-```
-Example data sources:
-```text
+
+Run the backend:
+
+uvicorn app.main:app --reload
+
+Backend:
+
+http://127.0.0.1:8000
+
+Swagger:
+
+http://127.0.0.1:8000/docs
+
+Frontend Setup
+
+Open another terminal:
+
+cd frontend
+
+npm install
+
+npm run dev
+
+Frontend:
+
+http://localhost:5173
+
+🔄 Application Workflow
+
+Enter Keyword
+      │
+      ▼
+Create Search
+      │
+      ▼
+Collect Online Mentions
+      │
+      ├───────────────┐
+      │               │
+      ▼               ▼
+     RSS        Hacker News
+      │               │
+      └───────┬───────┘
+              │
+              ▼
+       Stack Exchange
+              │
+              ▼
+       Normalize Data
+              │
+              ▼
+    Relevance Filtering
+              │
+              ▼
+       Deduplication
+              │
+              ▼
+      Sentiment Analysis
+              │
+              ▼
+     Topic Classification
+              │
+              ▼
+        PostgreSQL
+              │
+       ┌──────┼─────────┐
+       │      │         │
+       ▼      ▼         ▼
+   Analytics Insights Competitors
+       │      │         │
+       └──────┼─────────┘
+              │
+              ▼
+        React Dashboard
+
+📡 Data Sources
+
 RSS
+
+The RSS collector retrieves articles from configured feeds.
+
+Current configured sources include:
+
+TechCrunch
+
+The Verge
+
+Ars Technica
+
+Android Authority
+
 Hacker News
+
+The Hacker News collector retrieves technology-related discussions and processes them for relevance and analysis.
+
 Stack Exchange
-```
-Example development/test analysis:
-```text
-Total mentions: 8
+
+The Stack Exchange collector retrieves relevant community questions and discussions.
+
+🎯 Relevance Filtering
+
+The relevance service determines whether collected content is actually related to the searched keyword.
+
+Example:
+
+Keyword:
+Samsung Galaxy S26
+
+Relevant:
+"Samsung Galaxy S26 review and specifications"
+
+Not Relevant:
+"Samsung washing machine review"
+
+Only relevant mentions continue through the processing pipeline.
+
+♻️ Deduplication
+
+The deduplication service prevents the same mention from being stored multiple times.
+
+Duplicate detection can consider:
+
+URL similarity
+
+Content similarity
+
+Product/model context
+
+Existing database records
+
+Example:
+
+Article A
+https://example.com/article
+
+Article B
+https://example.com/article
+
+        ↓
+
+Duplicate detected
+
+        ↓
+
+Stored once
+
+😊 Sentiment Analysis
+
+Every processed mention can be classified as:
+
+Positive
+Neutral
+Negative
+
+The platform also stores sentiment confidence.
+
+Example:
+
+Sentiment:
+Positive
+
+Confidence:
+0.91
+
+Sentiment data is used by:
+
+Analytics
+
+Alerts
+
+AI Insights
+
+Competitor Comparison
+
+🏷️ Topic Classification
+
+Mentions are classified into topics such as:
+
+Pricing
+Features
+Competitors
+Security
+Other
+
+Example:
+
+"Galaxy S26 is cheaper than expected"
+
+        ↓
+
+Topic: Pricing
+
+Topic confidence is also stored for analyzed mentions.
+
+📊 Analytics
+
+The analytics system provides:
+
+Total mentions
+
+Sentiment distribution
+
+Topic distribution
+
+Source distribution
+
+Mentions over time
+
+First mention timestamp
+
+Latest mention timestamp
+
+Example development result:
+
+Total Mentions: 8
 
 Sentiment:
 Positive: 6
@@ -550,93 +537,458 @@ Competitors: 4
 Pricing: 2
 Features: 1
 Other: 1
-```
-These values are example development/test results and can change as new data is collected.
----
-Security Considerations
-The project follows basic security practices:
-Environment variables are excluded from Git
-Secrets are not stored in source code
-`.env.example` is provided as a configuration template
-Database credentials are configured through environment variables
-Docker services are isolated through Docker Compose networking
-Before production deployment, additional production security measures should be applied, including:
-HTTPS
-Secure secret management
-Authentication/authorization
-API rate limiting
-Database access restrictions
-Production CORS configuration
-Container hardening
----
-Current Project Status
-Completed
-[x] Multi-source data collection
-[x] RSS ingestion
-[x] Hacker News ingestion
-[x] Stack Exchange ingestion
-[x] Data normalization
-[x] Relevance filtering
-[x] Deduplication
-[x] Sentiment analysis
-[x] Topic classification
-[x] PostgreSQL persistence
-[x] Analytics
-[x] AI-assisted insights
-[x] Competitor comparison
-[x] Alerts
-[x] Scheduled monitoring
-[x] Search history
-[x] React dashboard
-[x] Docker Compose deployment
-[x] Backend API validation
-[x] Automated testing
-Test Status
-```text
-Backend tests: 24 / 24 passing
-```
-The complete Dockerized application has also been manually validated.
----
-Future Improvements
-Potential future enhancements include:
-Additional social media and community sources
-More advanced trend detection
-Historical sentiment tracking
-Real-time streaming ingestion
-Advanced alert rules
-User authentication and role management
-Background task queues
-Production monitoring and observability
-Improved LLM-based insight generation
-Cloud deployment
-API rate limiting and caching
----
-Screenshots
-Add screenshots of the main application pages here.
-Recommended screenshots:
-Dashboard
-Mentions Explorer
-Analytics
-AI Insights
-Competitor Comparison
-Alerts
-Scheduled Monitoring
+
+These values are example development/test results and change as new data is collected.
+
+🤖 AI Insights
+
+The AI Insights module analyzes processed mention data and generates higher-level observations.
+
+It can provide:
+
+Overall summary
+
+Positive observations
+
+Negative observations
+
+Pain points
+
+Opportunities
+
+Recommended actions
+
+Supporting evidence
+
+Workflow:
+
+Processed Mentions
+        │
+        ▼
+Evidence Collection
+        │
+        ▼
+Statistical Analysis
+        │
+        ▼
+AI / Local LLM
+        │
+        ▼
+Structured Insights
+        │
+        ▼
+React Dashboard
+
+When the local LLM does not return usable structured JSON, the application can use deterministic evidence-based fallback logic.
+
+⚔️ Competitor Comparison
+
+The platform can compare multiple keywords or products.
+
 Example:
-```markdown
-## Dashboard
+
+Samsung Galaxy S26
+        VS
+Google Pixel
+
+Comparison metrics include:
+
+Total mentions
+
+Sentiment
+
+Topics
+
+Sources
+
+Engagement
+
+Negative mentions
+
+🔔 Alerts
+
+The alerts module analyzes recent mention activity.
+
+It can evaluate:
+
+Recent mention volume
+
+Recent negative mentions
+
+Negative sentiment rate
+
+Changes compared with a previous period
+
+Example:
+
+Recent Period
+      │
+      ▼
+Negative Mentions
+      │
+      ▼
+Negative Rate
+      │
+      ▼
+Previous Period Comparison
+      │
+      ▼
+Alert Evaluation
+
+⏰ Scheduled Monitoring
+
+Users can create recurring monitoring jobs for keywords.
+
+Example:
+
+Keyword:
+Samsung Galaxy S26
+
+Interval:
+1440 minutes
+
+        ↓
+
+Scheduled Search
+        ↓
+Collect Mentions
+        ↓
+Process Mentions
+        ↓
+Update Database
+
+Monitoring supports:
+
+Create
+
+Retrieve
+
+Update
+
+Activate / deactivate
+
+Delete
+
+🌐 API Endpoints
+
+Method
+
+Endpoint
+
+Description
+
+GET
+
+/api/health
+
+Check backend health
+
+POST
+
+/api/searches
+
+Create a keyword search
+
+GET
+
+/api/searches/{search_id}
+
+Get search information
+
+GET
+
+/api/searches/{search_id}/mentions
+
+Get collected mentions
+
+GET
+
+/api/searches/{search_id}/analytics
+
+Get analytics
+
+GET
+
+/api/searches/{search_id}/insights
+
+Get AI-assisted insights
+
+POST
+
+/api/competitors/compare
+
+Compare keywords/products
+
+GET
+
+/api/searches/{search_id}/alerts
+
+Get alerts
+
+GET
+
+/api/monitorings
+
+List monitoring jobs
+
+POST
+
+/api/monitorings
+
+Create monitoring
+
+GET
+
+/api/monitorings/{monitoring_id}
+
+Get monitoring
+
+PATCH
+
+/api/monitorings/{monitoring_id}
+
+Update monitoring
+
+DELETE
+
+/api/monitorings/{monitoring_id}
+
+Delete monitoring
+
+Interactive API documentation:
+
+http://127.0.0.1:8000/docs
+
+🗄️ Database
+
+The application uses PostgreSQL for persistent storage.
+
+Main database tables include:
+
+searches
+mentions
+mention_analysis
+
+Database migrations are managed using Alembic.
+
+Example:
+
+alembic upgrade head
+
+🧪 Testing
+
+The official automated backend tests are located in:
+
+backend/tests/
+
+Run:
+
+cd backend
+pytest -v
+
+Current result:
+
+24 passed
+
+The test suite covers:
+
+Deduplication
+
+Relevance filtering
+
+Sentiment analysis
+
+Topic classification
+
+Additional development and evaluation scripts are stored in:
+
+backend/evaluation/
+
+🐳 Docker Architecture
+
+┌─────────────────────────────────────────────┐
+│              Docker Compose                 │
+│                                             │
+│   ┌─────────────────────────────────────┐   │
+│   │ Frontend                            │   │
+│   │ React + Vite + Nginx                │   │
+│   │ localhost:8090                      │   │
+│   └─────────────────┬───────────────────┘   │
+│                     │                       │
+│                     ▼                       │
+│   ┌─────────────────────────────────────┐   │
+│   │ Backend                             │   │
+│   │ FastAPI + Uvicorn                   │   │
+│   │ localhost:8000                      │   │
+│   └─────────────────┬───────────────────┘   │
+│                     │                       │
+│                     ▼                       │
+│   ┌─────────────────────────────────────┐   │
+│   │ PostgreSQL                          │   │
+│   │ localhost:5434                      │   │
+│   └─────────────────────────────────────┘   │
+│                                             │
+└─────────────────────────────────────────────┘
+
+🔐 Environment Configuration
+
+Sensitive environment files are not committed to Git.
+
+Use:
+
+.env.example
+
+as the configuration template.
+
+Local files such as:
+
+.env
+venv/
+node_modules/
+dist/
+__pycache__/
+.pytest_cache/
+
+are excluded through .gitignore.
+
+📸 Screenshots
+
+Screenshots can be added to the repository under:
+
+docs/screenshots/
+
+Recommended screenshots:
+
+🏠 Dashboard
+
+🔎 Search results
+
+📋 Mentions Explorer
+
+📊 Analytics
+
+🤖 AI Insights
+
+⚔️ Competitor Comparison
+
+🔔 Alerts
+
+⏰ Scheduled Monitoring
+
+Example:
 
 ![Dashboard](docs/screenshots/dashboard.png)
-```
----
-Author
+
+🎯 Project Status
+
+Completed
+
+✅ RSS data collection
+
+✅ Hacker News collection
+
+✅ Stack Exchange collection
+
+✅ Data normalization
+
+✅ Relevance filtering
+
+✅ Deduplication
+
+✅ Sentiment analysis
+
+✅ Topic classification
+
+✅ PostgreSQL persistence
+
+✅ Analytics
+
+✅ AI-assisted insights
+
+✅ Competitor comparison
+
+✅ Alerts
+
+✅ Scheduled monitoring
+
+✅ Search history
+
+✅ React dashboard
+
+✅ Docker Compose
+
+✅ Backend API validation
+
+✅ Automated backend testing
+
+✅ GitHub repository
+
+Test Status
+
+24 / 24 backend tests passing
+
+🚀 Future Enhancements
+
+Additional social/community data sources
+
+Real-time data ingestion
+
+Advanced trend detection
+
+Historical sentiment tracking
+
+More advanced alert rules
+
+User authentication
+
+Role-based access control
+
+Background task queues
+
+Redis caching
+
+Cloud deployment
+
+CI/CD pipeline
+
+Production monitoring
+
+Advanced LLM insights
+
+API rate limiting
+
+Horizontal scaling
+
+👨‍💻 Author
+
 Mohamed Navith
-B.Tech Computer Science and Engineering
-Interested in:
+
+B.Tech – Computer Science and Engineering
+
+Passionate about:
+
 Full Stack Development
+
 Python
-AI/ML
+
+Artificial Intelligence
+
+Machine Learning
+
 Cloud Computing
+
 DevOps
----
-License
+
+📜 License
+
 This project is developed as an open-source internship project.
+
+A separate open-source license can be added to the repository when the licensing terms are finalized.
+
+⭐ Support
+
+If you find this project useful, consider giving the repository a ⭐ on GitHub.
+
+Repository:
+
+https://github.com/MdNvD/social-listening-platform
