@@ -830,28 +830,51 @@ are excluded through `.gitignore`.
 
 # 📸 Screenshots
 
-Screenshots can be added to the repository under:
+## 🏠 Landing Page
 
-```text
-docs/screenshots/
-```
+![Landing Page](docs/screenshots/landing.png)
 
-Recommended screenshots:
+---
 
-- 🏠 Dashboard
-- 🔎 Search results
-- 📋 Mentions Explorer
-- 📊 Analytics
-- 🤖 AI Insights
-- ⚔️ Competitor Comparison
-- 🔔 Alerts
-- ⏰ Scheduled Monitoring
+## 📊 Dashboard
 
-Example:
-
-```markdown
 ![Dashboard](docs/screenshots/dashboard.png)
-```
+
+---
+
+## 📋 Mentions Explorer
+
+![Mentions Explorer](docs/screenshots/mentions.png)
+
+---
+
+## 🤖 AI Insights
+
+![AI Insights](docs/screenshots/insights.png)
+
+---
+
+## ⚔️ Competitor Comparison
+
+![Competitor Comparison](docs/screenshots/competitors.png)
+
+---
+
+## 🔔 Alerts
+
+![Alerts](docs/screenshots/alerts.png)
+
+---
+
+## ⏰ Scheduled Monitoring
+
+![Scheduled Monitoring](docs/screenshots/monitoring.png)
+
+---
+
+## 📚 Search History
+
+![Search History](docs/screenshots/history.png)
 
 ---
 
