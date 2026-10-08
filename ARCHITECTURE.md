@@ -1,13 +1,16 @@
-🏗️ System Architecture
+# 🏗️ System Architecture
 
-📌 Project Overview
+# 📌 Project Overview
 
-The Open-Source Social Listening Platform is a full-stack application that collects online mentions for user-defined keywords, processes the collected content using NLP techniques, stores structured results in PostgreSQL, and presents analytics and insights through a React dashboard.
+The **Open-Source Social Listening Platform** is a full-stack application that collects online mentions for user-defined keywords, processes the collected content using NLP techniques, stores structured results in PostgreSQL, and presents analytics and insights through a React dashboard.
 
 The system is designed using a modular architecture so that data collectors, processing services, analytics, AI insights, alerts, and scheduled monitoring can evolve independently.
 
-🧩 High-Level Architecture
+---
 
+# 🧩 High-Level Architecture
+
+```text
                          👤 USER
                            │
                            ▼
@@ -80,11 +83,15 @@ The system is designed using a modular architecture so that data collectors, pro
                            │
                            ▼
                    React Dashboard
+```
 
-🖥️ Frontend Architecture
+---
 
-The frontend is built using React + Vite.
+# 🖥️ Frontend Architecture
 
+The frontend is built using **React + Vite**.
+
+```text
 frontend/
 │
 ├── public/
@@ -121,45 +128,40 @@ frontend/
 ├── nginx.conf
 ├── package.json
 └── vite.config.js
+```
 
-Frontend Responsibilities
+## Frontend Responsibilities
 
 The frontend handles:
 
-Search input
-
-Search history
-
-Dashboard
-
-Mention browsing
-
-Sentiment visualization
-
-Topic visualization
-
-Analytics
-
-AI insights
-
-Competitor comparison
-
-Alerts
-
-Scheduled monitoring
-
-Navigation and application state
+- Search input
+- Search history
+- Dashboard
+- Mention browsing
+- Sentiment visualization
+- Topic visualization
+- Analytics
+- AI insights
+- Competitor comparison
+- Alerts
+- Scheduled monitoring
+- Navigation and application state
 
 The frontend communicates with the backend using REST APIs.
 
 The backend URL is configured using:
 
+```text
 VITE_API_BASE_URL
+```
 
-⚙️ Backend Architecture
+---
 
-The backend is implemented using Python, FastAPI, and Uvicorn.
+# ⚙️ Backend Architecture
 
+The backend is implemented using **Python, FastAPI, and Uvicorn**.
+
+```text
 backend/
 │
 ├── app/
@@ -213,11 +215,15 @@ backend/
 ├── pytest.ini
 ├── requirements.txt
 └── Dockerfile
+```
 
-🔌 API Layer
+---
+
+# 🔌 API Layer
 
 The API layer provides REST endpoints for the frontend.
 
+```text
 api/
 ├── searches.py
 ├── mentions.py
@@ -226,25 +232,24 @@ api/
 ├── competitors.py
 ├── monitorings.py
 └── alerts.py
+```
 
-Responsibilities
+### Responsibilities
 
-Receive frontend requests
+- Receive frontend requests
+- Validate request data
+- Call appropriate services
+- Return structured responses
+- Handle HTTP errors
+- Connect frontend operations to business logic
 
-Validate request data
+---
 
-Call appropriate services
-
-Return structured responses
-
-Handle HTTP errors
-
-Connect frontend operations to business logic
-
-📡 Data Collection Architecture
+# 📡 Data Collection Architecture
 
 The collector layer retrieves data from supported public sources.
 
+```text
                     Search Keyword
                           │
           ┌───────────────┼───────────────┐
@@ -256,33 +261,34 @@ The collector layer retrieves data from supported public sources.
                           │
                           ▼
                   Collected Mentions
+```
 
-RSS Collector
+## RSS Collector
 
 The RSS collector retrieves articles from configured feeds.
 
 Configured sources include:
 
-TechCrunch
+- TechCrunch
+- The Verge
+- Ars Technica
+- Android Authority
 
-The Verge
-
-Ars Technica
-
-Android Authority
-
-Hacker News Collector
+## Hacker News Collector
 
 Retrieves technology-related discussions and posts from Hacker News.
 
-Stack Exchange Collector
+## Stack Exchange Collector
 
 Retrieves relevant questions and community discussions from Stack Exchange.
 
-🔄 Data Processing Architecture
+---
+
+# 🔄 Data Processing Architecture
 
 Every collected mention passes through the processing pipeline.
 
+```text
                  Raw Collected Data
                          │
                          ▼
@@ -302,8 +308,11 @@ Every collected mention passes through the processing pipeline.
                          │
                          ▼
                 Database Persistence
+```
 
-1️⃣ Normalization Layer
+---
+
+# 1️⃣ Normalization Layer
 
 Different sources provide different data formats.
 
@@ -311,6 +320,7 @@ The normalization service converts source-specific records into a common interna
 
 Example:
 
+```text
 source
 source_id
 url
@@ -320,15 +330,19 @@ author
 published_at
 keyword
 engagement
+```
 
 This allows the processing layer to work consistently across all collectors.
 
-2️⃣ Relevance Layer
+---
+
+# 2️⃣ Relevance Layer
 
 The relevance service determines whether a collected item is related to the user's keyword.
 
 Example:
 
+```text
 Keyword:
 Samsung Galaxy S26
 
@@ -337,23 +351,24 @@ Relevant:
 
 Not Relevant:
 "Samsung washing machine review"
+```
 
 Only relevant content proceeds to further processing.
 
-3️⃣ Deduplication Layer
+---
+
+# 3️⃣ Deduplication Layer
 
 The deduplication service prevents duplicate mentions.
 
 It can consider:
 
-URL similarity
+- URL similarity
+- Content similarity
+- Product/model context
+- Existing mentions
 
-Content similarity
-
-Product/model context
-
-Existing mentions
-
+```text
 Article A
        │
        ├──── Same URL ────┐
@@ -363,45 +378,54 @@ Article B                ▼
                       │
                       ▼
                  Store Once
+```
 
-4️⃣ Sentiment Analysis Layer
+---
+
+# 4️⃣ Sentiment Analysis Layer
 
 The sentiment service classifies processed mentions into:
 
+```text
 Positive
 Neutral
 Negative
+```
 
 The service also produces confidence information.
 
 The results are used by:
 
-Analytics
+- Analytics
+- Alerts
+- Competitor comparison
+- AI insights
 
-Alerts
+---
 
-Competitor comparison
-
-AI insights
-
-5️⃣ Topic Classification Layer
+# 5️⃣ Topic Classification Layer
 
 The topic service classifies mentions into categories such as:
 
+```text
 Pricing
 Features
 Competitors
 Security
 Other
+```
 
 Topic confidence is stored with the analysis result.
 
-🗄️ Database Architecture
+---
 
-The platform uses PostgreSQL for persistent storage.
+# 🗄️ Database Architecture
+
+The platform uses **PostgreSQL** for persistent storage.
 
 Main entities:
 
+```text
 ┌──────────────────┐
 │     searches     │
 ├──────────────────┤
@@ -438,13 +462,17 @@ Main entities:
 │ topic                │
 │ topic_confidence     │
 └──────────────────────┘
+```
 
-Database migrations are managed using Alembic.
+Database migrations are managed using **Alembic**.
 
-📊 Analytics Architecture
+---
+
+# 📊 Analytics Architecture
 
 The analytics service aggregates processed mention data.
 
+```text
 Processed Mentions
         │
         ▼
@@ -464,27 +492,25 @@ Processed Mentions
             │
             ▼
        Dashboard Data
+```
 
 Analytics include:
 
-Total mentions
+- Total mentions
+- Sentiment distribution
+- Topic distribution
+- Source distribution
+- Mentions over time
+- First mention
+- Latest mention
 
-Sentiment distribution
+---
 
-Topic distribution
-
-Source distribution
-
-Mentions over time
-
-First mention
-
-Latest mention
-
-🤖 AI Insights Architecture
+# 🤖 AI Insights Architecture
 
 The AI Insights service creates higher-level observations from processed mention data.
 
+```text
 Processed Mentions
         │
         ▼
@@ -501,29 +527,27 @@ Structured Insights
         │
         ▼
 React Dashboard
+```
 
 Generated information can include:
 
-Overall summary
-
-Positive observations
-
-Negative observations
-
-Pain points
-
-Opportunities
-
-Recommended actions
-
-Evidence
+- Overall summary
+- Positive observations
+- Negative observations
+- Pain points
+- Opportunities
+- Recommended actions
+- Evidence
 
 If structured LLM output is unavailable, deterministic evidence-based fallback logic can be used.
 
-⚔️ Competitor Comparison Architecture
+---
+
+# ⚔️ Competitor Comparison Architecture
 
 The competitor service allows multiple keywords to be compared.
 
+```text
 Keyword A
    │
    ▼
@@ -543,25 +567,24 @@ Sentiment      Topics
    ┌──────┴──────┐
    │             │
 Keyword B     Search Data
+```
 
 Comparison metrics include:
 
-Mention volume
+- Mention volume
+- Sentiment
+- Topics
+- Sources
+- Engagement
+- Negative mentions
 
-Sentiment
+---
 
-Topics
-
-Sources
-
-Engagement
-
-Negative mentions
-
-🔔 Alert Architecture
+# 🔔 Alert Architecture
 
 The alert service evaluates recent activity.
 
+```text
 Recent Mentions
        │
        ▼
@@ -578,21 +601,22 @@ Alert Evaluation
        │
        ▼
 Frontend Alerts
+```
 
 The system can evaluate changes in:
 
-Mention volume
+- Mention volume
+- Negative mention count
+- Negative sentiment rate
+- Recent vs previous periods
 
-Negative mention count
+---
 
-Negative sentiment rate
-
-Recent vs previous periods
-
-⏰ Scheduled Monitoring Architecture
+# ⏰ Scheduled Monitoring Architecture
 
 The scheduler allows recurring searches.
 
+```text
 Monitoring Configuration
           │
           ▼
@@ -609,35 +633,31 @@ Monitoring Configuration
           │
           ▼
        PostgreSQL
+```
 
 Monitoring records can contain:
 
-Keyword
-
-Interval
-
-Active status
-
-Last run
-
-Next run
+- Keyword
+- Interval
+- Active status
+- Last run
+- Next run
 
 Supported operations:
 
-Create
+- Create
+- Retrieve
+- Update
+- Activate / deactivate
+- Delete
 
-Retrieve
+---
 
-Update
-
-Activate / deactivate
-
-Delete
-
-🔎 Search Lifecycle
+# 🔎 Search Lifecycle
 
 A complete search follows this sequence:
 
+```text
 User enters keyword
         │
         ▼
@@ -679,13 +699,17 @@ AI Insights
         │
         ▼
 Frontend Dashboard
+```
 
-🌐 API Communication
+---
+
+# 🌐 API Communication
 
 The frontend communicates with the backend through REST APIs.
 
 Example:
 
+```text
 React Dashboard
        │
        │ GET /api/searches/21/analytics
@@ -703,11 +727,15 @@ Analytics Response
        │
        ▼
 React Dashboard
+```
 
-🐳 Docker Architecture
+---
+
+# 🐳 Docker Architecture
 
 The complete application can be run with Docker Compose.
 
+```text
 ┌─────────────────────────────────────────────┐
 │               Docker Compose               │
 │                                             │
@@ -731,91 +759,95 @@ The complete application can be run with Docker Compose.
 │  └─────────────────────────────────────┘    │
 │                                             │
 └─────────────────────────────────────────────┘
+```
 
-🧪 Testing Architecture
+---
+
+# 🧪 Testing Architecture
 
 Official automated tests are located in:
 
+```text
 backend/tests/
+```
 
 Current test modules:
 
+```text
 test_deduplication.py
 test_relevance.py
 test_sentiment.py
 test_topic.py
+```
 
 The test suite currently reports:
 
+```text
 24 passed
+```
 
 Additional development and evaluation scripts are located in:
 
+```text
 backend/evaluation/
+```
 
 These include tests and evaluation scripts for:
 
-RSS
+- RSS
+- Hacker News
+- Stack Exchange
+- Relevance
+- Sentiment
+- Topic classification
+- Deduplication
+- Normalization
+- End-to-end processing
+- Search services
 
-Hacker News
+---
 
-Stack Exchange
-
-Relevance
-
-Sentiment
-
-Topic classification
-
-Deduplication
-
-Normalization
-
-End-to-end processing
-
-Search services
-
-🔐 Security and Configuration
+# 🔐 Security and Configuration
 
 Environment-specific configuration is stored locally.
 
 The repository contains:
 
+```text
 .env.example
+```
 
-while actual .env files are excluded from Git.
+while actual `.env` files are excluded from Git.
 
 Ignored local resources include:
 
+```text
 .env
 venv/
 node_modules/
 dist/
 __pycache__/
 .pytest_cache/
+```
 
 Production deployment should additionally use:
 
-HTTPS
+- HTTPS
+- Secure secret management
+- Authentication
+- Authorization
+- Rate limiting
+- Restricted database access
+- Production CORS configuration
+- Container hardening
 
-Secure secret management
+---
 
-Authentication
-
-Authorization
-
-Rate limiting
-
-Restricted database access
-
-Production CORS configuration
-
-Container hardening
-
-🚀 Deployment Architecture
+# 🚀 Deployment Architecture
 
 The intended deployment flow is:
 
+```text
 Developer
     │
     ▼
@@ -835,85 +867,59 @@ Docker Compose / Cloud Environment
     │
     ▼
 Running Application
+```
 
-📈 Current System Status
+---
+
+# 📈 Current System Status
 
 The architecture currently supports:
 
-✅ Multi-source ingestion
-
-✅ RSS
-
-✅ Hacker News
-
-✅ Stack Exchange
-
-✅ Normalization
-
-✅ Relevance filtering
-
-✅ Deduplication
-
-✅ Sentiment analysis
-
-✅ Topic classification
-
-✅ PostgreSQL persistence
-
-✅ Analytics
-
-✅ AI-assisted insights
-
-✅ Competitor comparison
-
-✅ Alerts
-
-✅ Scheduled monitoring
-
-✅ Search history
-
-✅ React dashboard
-
-✅ Docker Compose
-
-✅ Automated testing
+- ✅ Multi-source ingestion
+- ✅ RSS
+- ✅ Hacker News
+- ✅ Stack Exchange
+- ✅ Normalization
+- ✅ Relevance filtering
+- ✅ Deduplication
+- ✅ Sentiment analysis
+- ✅ Topic classification
+- ✅ PostgreSQL persistence
+- ✅ Analytics
+- ✅ AI-assisted insights
+- ✅ Competitor comparison
+- ✅ Alerts
+- ✅ Scheduled monitoring
+- ✅ Search history
+- ✅ React dashboard
+- ✅ Docker Compose
+- ✅ Automated testing
 
 Current backend test status:
 
+```text
 24 / 24 tests passing
+```
 
-🔮 Future Architecture Improvements
+---
+
+# 🔮 Future Architecture Improvements
 
 Possible improvements include:
 
-Real-time ingestion
-
-More social/community sources
-
-Background task queues
-
-Redis caching
-
-Advanced trend detection
-
-Historical sentiment tracking
-
-User authentication
-
-Role-based access control
-
-API rate limiting
-
-Distributed processing
-
-Cloud deployment
-
-Centralized logging
-
-Application monitoring
-
-CI/CD pipelines
-
-Horizontal scaling
-
-More advanced LLM insight generation
+- Real-time ingestion
+- More social/community sources
+- Background task queues
+- Redis caching
+- Advanced trend detection
+- Historical sentiment tracking
+- User authentication
+- Role-based access control
+- API rate limiting
+- Distributed processing
+- Cloud deployment
+- Centralized logging
+- Application monitoring
+- CI/CD pipelines
+- Horizontal scaling
+- More advanced LLM insight generation
