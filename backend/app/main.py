@@ -132,6 +132,8 @@ app.add_middleware(
         # Optional local frontend ports
         "http://localhost:3000",
         "http://127.0.0.1:3000",
+
+        "https://social-listening-platform-five.vercel.app",
     ],
     allow_credentials=True,
     allow_methods=["*"],
