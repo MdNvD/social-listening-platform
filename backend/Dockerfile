@@ -5,7 +5,6 @@ WORKDIR /app
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
-# System packages required by scientific/NLP Python packages
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
        build-essential \
@@ -14,8 +13,6 @@ RUN apt-get update \
 COPY requirements.txt .
 
 RUN pip install --no-cache-dir --upgrade pip \
-    && pip install --no-cache-dir torch==2.14.0+cpu \
-       --index-url https://download.pytorch.org/whl/cpu \
     && pip install --no-cache-dir -r requirements.txt
 
 COPY app ./app

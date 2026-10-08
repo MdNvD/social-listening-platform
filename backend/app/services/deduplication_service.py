@@ -1,315 +1,215 @@
 import re
-from functools import lru_cache
+from typing import Optional
 
-from sentence_transformers import SentenceTransformer
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
 
 from app.collectors.models import CollectedMention
 
 
 class DeduplicationService:
     """
-    Detects duplicate and near-duplicate mentions.
+    Lightweight duplicate detection service.
 
-    Detection order:
-    1. Exact normalized URL
-    2. Exact normalized content
-    3. Product/model conflict detection
-    4. Semantic similarity using sentence embeddings
+    Uses:
+    1. Normalized URL matching
+    2. Normalized content matching
+    3. Samsung Galaxy model conflict detection
+    4. TF-IDF cosine similarity
 
-    Important:
-    Two articles about different product models should not
-    automatically become duplicates simply because their wording
-    is very similar.
-
-    Example:
-
-        Galaxy S26 review
-        Galaxy S25 review
-
-    These are different mentions and should remain separate.
+    This replaces the previous SentenceTransformer-based
+    semantic similarity model to reduce memory usage.
     """
 
-    MODEL_NAME = "all-MiniLM-L6-v2"
-
-    def __init__(
-        self,
-        similarity_threshold: float = 0.82,
-    ):
+    def __init__(self, similarity_threshold: float = 0.82):
         self.similarity_threshold = similarity_threshold
-        self.model = self._load_model()
-
-    # ==================================================
-    # MODEL
-    # ==================================================
-
-    @staticmethod
-    @lru_cache(maxsize=1)
-    def _load_model():
-        print(
-            f"Loading deduplication model: "
-            f"{DeduplicationService.MODEL_NAME}"
-        )
-
-        return SentenceTransformer(
-            DeduplicationService.MODEL_NAME
-        )
-
-    # ==================================================
-    # MAIN DUPLICATE DETECTION
-    # ==================================================
 
     def find_duplicate(
         self,
         mention: CollectedMention,
         existing_mentions: list[CollectedMention],
-    ) -> int | None:
+    ) -> Optional[int]:
+        """
+        Return the index of an existing duplicate mention.
 
-        normalized_url = self._normalize_url(
-            mention.url
-        )
-
-        normalized_content = (
-            self._normalize_text(
-                mention.content
-            )
-        )
-
-        # ------------------------------------------
-        # 1. EXACT NORMALIZED URL
-        # ------------------------------------------
-
-        for index, existing in enumerate(
-            existing_mentions
-        ):
-
-            existing_url = self._normalize_url(
-                existing.url
-            )
-
-            if (
-                normalized_url
-                and normalized_url == existing_url
-            ):
-
-                print(
-                    "\nDuplicate detected by "
-                    "exact normalized URL."
-                )
-
-                return index
-
-        # ------------------------------------------
-        # 2. EXACT NORMALIZED CONTENT
-        # ------------------------------------------
-
-        for index, existing in enumerate(
-            existing_mentions
-        ):
-
-            existing_content = (
-                self._normalize_text(
-                    existing.content
-                )
-            )
-
-            if (
-                normalized_content
-                and normalized_content == existing_content
-            ):
-
-                print(
-                    "\nDuplicate detected by "
-                    "exact normalized content."
-                )
-
-                return index
-
-        # ------------------------------------------
-        # 3. PRODUCT / MODEL CONFLICT CHECK
-        # ------------------------------------------
-
-        for index, existing in enumerate(
-            existing_mentions
-        ):
-
-            model_conflict = (
-                self._has_model_conflict(
-                    mention,
-                    existing,
-                )
-            )
-
-            if model_conflict:
-
-                print(
-                    "\nMODEL CONFLICT DETECTED"
-                )
-
-                print(
-                    f"Current title : "
-                    f"{mention.title}"
-                )
-
-                print(
-                    f"Existing title: "
-                    f"{existing.title}"
-                )
-
-                print(
-                    "Result: NOT a duplicate."
-                )
-
-                return None
-
-        # ------------------------------------------
-        # 4. SEMANTIC SIMILARITY
-        # ------------------------------------------
+        Returns:
+            int: index of duplicate mention
+            None: if no duplicate is found
+        """
 
         if not existing_mentions:
             return None
 
-        current_text = self._build_embedding_text(
-            mention
+        current_url = self._normalize_url(mention.url)
+        current_content = self._normalize_content(
+            mention.content
         )
 
-        existing_texts = [
-            self._build_embedding_text(existing)
-            for existing in existing_mentions
-        ]
+        for index, existing in enumerate(existing_mentions):
+            existing_url = self._normalize_url(existing.url)
 
-        current_embedding = self.model.encode(
-            current_text,
-            normalize_embeddings=True,
-        )
+            # -------------------------------------------------
+            # 1. Exact normalized URL match
+            # -------------------------------------------------
+            if current_url and existing_url:
+                if current_url == existing_url:
+                    return index
 
-        existing_embeddings = self.model.encode(
-            existing_texts,
-            normalize_embeddings=True,
-        )
-
-        similarities = (
-            existing_embeddings
-            @ current_embedding
-        )
-
-        best_index = int(
-            similarities.argmax()
-        )
-
-        best_score = float(
-            similarities[best_index]
-        )
-
-        print(
-            "\nSEMANTIC DEDUPLICATION"
-        )
-
-        print(
-            f"Best index : {best_index}"
-        )
-
-        print(
-            f"Best score : {best_score:.4f}"
-        )
-
-        print(
-            f"Threshold  : "
-            f"{self.similarity_threshold:.4f}"
-        )
-
-        is_duplicate = (
-            best_score
-            >= self.similarity_threshold
-        )
-
-        print(
-            f"Decision   : {is_duplicate}"
-        )
-
-        if is_duplicate:
-
-            print(
-                "RESULT: Duplicate because "
-                "semantic similarity exceeds "
-                "the configured threshold."
+            # -------------------------------------------------
+            # 2. Exact normalized content match
+            # -------------------------------------------------
+            existing_content = self._normalize_content(
+                existing.content
             )
 
-            return best_index
+            if (
+                current_content
+                and existing_content
+                and current_content == existing_content
+            ):
+                return index
 
-        print(
-            "RESULT: Not a duplicate because "
-            "semantic similarity is below "
-            "the configured threshold."
-        )
+            # -------------------------------------------------
+            # 3. Galaxy model conflict
+            # -------------------------------------------------
+            if self._has_model_conflict(
+                mention,
+                existing,
+            ):
+                continue
+
+            # -------------------------------------------------
+            # 4. Lightweight semantic similarity
+            # -------------------------------------------------
+            if (
+                current_content
+                and existing_content
+                and self._is_semantically_similar(
+                    mention,
+                    existing,
+                )
+            ):
+                return index
 
         return None
 
-    # ==================================================
-    # MODEL CONFLICT DETECTION
-    # ==================================================
-
-    @classmethod
-    def _has_model_conflict(
-        cls,
-        first: CollectedMention,
-        second: CollectedMention,
+    def _is_semantically_similar(
+        self,
+        current: CollectedMention,
+        existing: CollectedMention,
     ) -> bool:
         """
-        Detect whether two mentions explicitly refer to
-        different product models.
-
-        Example:
-
-            Galaxy S26
-            Galaxy S25
-
-        returns True.
-
-        Example:
-
-            Galaxy S26
-            Galaxy S26
-
-        returns False.
-
-        This prevents semantic similarity from incorrectly
-        merging different product generations.
+        Compare two mentions using TF-IDF cosine similarity.
         """
 
-        first_text = cls._normalize_text(
-            f"{first.title or ''} "
-            f"{first.content or ''}"
-        )
+        current_text = self._build_embedding_text(current)
+        existing_text = self._build_embedding_text(existing)
 
-        second_text = cls._normalize_text(
-            f"{second.title or ''} "
-            f"{second.content or ''}"
-        )
-
-        first_models = cls._extract_galaxy_models(
-            first_text
-        )
-
-        second_models = cls._extract_galaxy_models(
-            second_text
-        )
-
-        # If either mention does not contain an
-        # identifiable Galaxy S model, we cannot
-        # establish a model conflict.
-        if not first_models or not second_models:
+        if not current_text or not existing_text:
             return False
 
-        # If there is at least one model in each mention
-        # and there is no common model, treat them as
-        # different product mentions.
-        common_models = (
-            first_models.intersection(
-                second_models
+        try:
+            vectorizer = TfidfVectorizer(
+                lowercase=True,
+                stop_words="english",
+                ngram_range=(1, 2),
+                sublinear_tf=True,
             )
+
+            vectors = vectorizer.fit_transform(
+                [current_text, existing_text]
+            )
+
+            similarity = cosine_similarity(
+                vectors[0:1],
+                vectors[1:2],
+            )[0][0]
+
+            return float(similarity) >= self.similarity_threshold
+
+        except ValueError:
+            # Happens when there are no usable terms.
+            return False
+
+    @staticmethod
+    def _build_embedding_text(
+        mention: CollectedMention,
+    ) -> str:
+        """
+        Build text used for similarity comparison.
+
+        Title is repeated so important title terms have
+        slightly more influence.
+        """
+
+        title = (mention.title or "").strip()
+        content = (mention.content or "").strip()
+
+        return f"{title} {title} {content}".strip()
+
+    @staticmethod
+    def _normalize_content(text: str) -> str:
+        """
+        Normalize article content for exact comparison.
+        """
+
+        if not text:
+            return ""
+
+        text = text.lower()
+
+        # Remove URLs
+        text = re.sub(
+            r"https?://\S+|www\.\S+",
+            " ",
+            text,
         )
 
-        return len(common_models) == 0
+        # Normalize whitespace
+        text = re.sub(
+            r"\s+",
+            " ",
+            text,
+        )
+
+        # Remove punctuation
+        text = re.sub(
+            r"[^\w\s]",
+            "",
+            text,
+        )
+
+        return text.strip()
+
+    @staticmethod
+    def _normalize_url(url: str) -> str:
+        """
+        Normalize URLs by removing tracking parameters.
+        """
+
+        if not url:
+            return ""
+
+        url = url.strip().lower()
+
+        # Remove fragments
+        url = url.split("#")[0]
+
+        # Remove common tracking parameters
+        url = re.sub(
+            r"[?&](utm_[^=&]+|fbclid|gclid)=[^&]*",
+            "",
+            url,
+        )
+
+        # Remove trailing ?
+        url = url.rstrip("?")
+
+        # Remove trailing slash
+        if url.endswith("/"):
+            url = url[:-1]
+
+        return url
 
     @staticmethod
     def _extract_galaxy_models(
@@ -318,146 +218,58 @@ class DeduplicationService:
         """
         Extract Samsung Galaxy S-series model numbers.
 
-        Examples detected:
-
-            Galaxy S25
-            Galaxy S26
-            Galaxy S26 Ultra
-            Galaxy S26 Plus
-            Galaxy S26 FE
-
-        The returned value uses the base model number,
-        for example:
-
-            Galaxy S26 Ultra -> s26
-            Galaxy S26 FE    -> s26
+        Example:
+            'Samsung Galaxy S26 Ultra and S26 FE'
+            -> {'s26'}
         """
 
-        pattern = r"\bgalaxy\s+(s\d+)\b"
+        if not text:
+            return set()
 
         matches = re.findall(
-            pattern,
+            r"\bGalaxy\s+S(\d+)\b",
             text,
             flags=re.IGNORECASE,
         )
 
         return {
-            match.lower()
-            for match in matches
+            f"s{number.lower()}"
+            for number in matches
         }
 
-    # ==================================================
-    # EMBEDDING TEXT
-    # ==================================================
-
-    @classmethod
-    def _build_embedding_text(
-        cls,
-        mention: CollectedMention,
-    ) -> str:
+    @staticmethod
+    def _has_model_conflict(
+        first: CollectedMention,
+        second: CollectedMention,
+    ) -> bool:
         """
-        Build the text used by the embedding model.
-
-        The title is repeated deliberately so important
-        information from the title receives stronger
-        influence during similarity comparison.
+        Return True when two mentions refer to different
+        Samsung Galaxy S-series models.
         """
 
-        title = cls._normalize_text(
-            mention.title or ""
+        first_text = (
+            f"{first.title or ''} "
+            f"{first.content or ''}"
         )
 
-        content = cls._normalize_text(
-            mention.content or ""
+        second_text = (
+            f"{second.title or ''} "
+            f"{second.content or ''}"
         )
 
-        if title and content:
-
-            return (
-                f"{title}. "
-                f"{title}. "
-                f"{content}"
+        first_models = (
+            DeduplicationService._extract_galaxy_models(
+                first_text
             )
-
-        return title or content
-
-    # ==================================================
-    # TEXT NORMALIZATION
-    # ==================================================
-
-    @staticmethod
-    def _normalize_text(
-        value: str,
-    ) -> str:
-        """
-        Normalize text for comparison and embeddings.
-        """
-
-        if not value:
-            return ""
-
-        value = value.lower()
-
-        # Remove URLs.
-        value = re.sub(
-            r"https?://\S+",
-            " ",
-            value,
         )
 
-        # Keep letters, numbers and spaces.
-        value = re.sub(
-            r"[^a-z0-9\s]",
-            " ",
-            value,
+        second_models = (
+            DeduplicationService._extract_galaxy_models(
+                second_text
+            )
         )
 
-        # Normalize whitespace.
-        value = re.sub(
-            r"\s+",
-            " ",
-            value,
-        )
+        if not first_models or not second_models:
+            return False
 
-        return value.strip()
-
-    # ==================================================
-    # URL NORMALIZATION
-    # ==================================================
-
-    @staticmethod
-    def _normalize_url(
-        url: str,
-    ) -> str:
-        """
-        Normalize URLs before comparison.
-
-        Removes:
-        - fragments
-        - common tracking parameters
-        """
-
-        if not url:
-            return ""
-
-        url = url.strip().lower()
-
-        # Remove fragment.
-        url = url.split("#")[0]
-
-        # Remove tracking parameters.
-        url = re.sub(
-            r"[?&]"
-            r"(utm_[^=&]+|"
-            r"fbclid|"
-            r"gclid|"
-            r"oc)="
-            r"[^&]*",
-            "",
-            url,
-        )
-
-        # Remove leftover ? or &.
-        url = url.rstrip("?&")
-
-        return url
+        return first_models.isdisjoint(second_models)

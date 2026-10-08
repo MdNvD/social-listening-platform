@@ -1,27 +1,18 @@
-from transformers import pipeline
-
-
 class SentimentService:
     """
-    Sentiment analysis service using a Hugging Face model.
+    Lightweight domain-aware sentiment analysis service.
 
-    Primary model:
-        cardiffnlp/twitter-roberta-base-sentiment-latest
-
-    Output:
+    Classifies text as:
         positive
         neutral
         negative
 
-    V2 adds a lightweight domain-aware adjustment layer for
-    social-listening content.
+    Uses keyword and phrase-based signals instead of a
+    Hugging Face Transformer model.
 
-    The Hugging Face model remains the primary classifier.
+    This keeps the service lightweight enough for small
+    deployment environments.
     """
-
-    MODEL_NAME = (
-        "cardiffnlp/twitter-roberta-base-sentiment-latest"
-    )
 
     # ---------------------------------------------------------
     # Domain sentiment signals
@@ -66,6 +57,17 @@ class SentimentService:
         "zero-click",
         "pwned",
         "permission bypass",
+        "disappointed",
+        "disappointing",
+        "terrible",
+        "awful",
+        "worst",
+        "poor",
+        "bad",
+        "hate",
+        "hated",
+        "slow",
+        "expensive",
     }
 
     POSITIVE_SIGNALS = {
@@ -84,15 +86,57 @@ class SentimentService:
         "impressive",
         "fantastic",
         "outstanding",
+        "good",
+        "better",
+        "awesome",
+        "perfect",
+        "fast",
+        "reliable",
+        "useful",
+        "helpful",
+    }
+
+    # Phrases that are stronger than individual words.
+    STRONG_NEGATIVE_SIGNALS = {
+        "very disappointed",
+        "extremely disappointed",
+        "terrible experience",
+        "awful experience",
+        "worst experience",
+        "critical security flaw",
+        "critical security issue",
+        "major security vulnerability",
+        "serious security issue",
+        "data breach",
+        "security breach",
+        "does not work",
+        "doesn't work",
+        "not working",
+        "stopped working",
+        "completely broken",
+    }
+
+    STRONG_POSITIVE_SIGNALS = {
+        "highly recommend",
+        "strongly recommend",
+        "very good",
+        "very impressive",
+        "excellent performance",
+        "excellent battery life",
+        "great performance",
+        "great battery life",
+        "works perfectly",
+        "works great",
     }
 
     def __init__(self):
+        """
+        No external ML model is loaded.
 
-        self.classifier = pipeline(
-            "sentiment-analysis",
-            model=self.MODEL_NAME,
-            tokenizer=self.MODEL_NAME,
-        )
+        This makes application startup fast and keeps
+        memory usage low.
+        """
+        pass
 
     # =========================================================
     # Main analysis
@@ -106,76 +150,18 @@ class SentimentService:
         text = text.strip()
 
         if not text:
-
             return {
                 "sentiment": "neutral",
                 "confidence": 0.0,
             }
 
-        # -----------------------------------------------------
-        # Hugging Face model
-        # -----------------------------------------------------
-
-        result = self.classifier(
-            text,
-            truncation=True,
-            max_length=512,
-        )[0]
-
-        model_sentiment = (
-            result["label"]
-            .lower()
-        )
-
-        model_confidence = round(
-            float(result["score"]),
-            4,
+        normalized_text = self._normalize_text(
+            text
         )
 
         # -----------------------------------------------------
-        # Domain-aware adjustment
+        # Find matching signals
         # -----------------------------------------------------
-
-        adjusted_sentiment = (
-            self._apply_domain_adjustment(
-                text=text,
-                model_sentiment=model_sentiment,
-                model_confidence=model_confidence,
-            )
-        )
-
-        # -----------------------------------------------------
-        # Confidence
-        # -----------------------------------------------------
-
-        adjusted_confidence = (
-            self._calculate_confidence(
-                original_confidence=model_confidence,
-                original_sentiment=model_sentiment,
-                adjusted_sentiment=adjusted_sentiment,
-                text=text,
-            )
-        )
-
-        return {
-            "sentiment": adjusted_sentiment,
-            "confidence": adjusted_confidence,
-        }
-
-    # =========================================================
-    # Domain adjustment
-    # =========================================================
-
-    def _apply_domain_adjustment(
-        self,
-        text: str,
-        model_sentiment: str,
-        model_confidence: float,
-    ) -> str:
-
-        normalized_text = (
-            self._normalize_text(text)
-        )
 
         negative_matches = (
             self._find_signal_matches(
@@ -191,50 +177,98 @@ class SentimentService:
             )
         )
 
-        negative_count = len(
-            negative_matches
+        strong_negative_matches = (
+            self._find_signal_matches(
+                normalized_text,
+                self.STRONG_NEGATIVE_SIGNALS,
+            )
         )
 
-        positive_count = len(
-            positive_matches
+        strong_positive_matches = (
+            self._find_signal_matches(
+                normalized_text,
+                self.STRONG_POSITIVE_SIGNALS,
+            )
         )
 
         # -----------------------------------------------------
-        # Strong negative domain signal
+        # Calculate weighted scores
         # -----------------------------------------------------
-        #
-        # We only override the model when:
-        #
-        # 1. There is a strong negative signal.
-        # 2. The model predicted neutral.
-        #
-        # This avoids unnecessarily overriding confident
-        # positive/negative model predictions.
+
+        negative_score = (
+            len(negative_matches)
+            + len(strong_negative_matches) * 2
+        )
+
+        positive_score = (
+            len(positive_matches)
+            + len(strong_positive_matches) * 2
+        )
+
+        # A positive statement combined with a minor issue
+        # should remain positive rather than becoming neutral.
+        if (
+            "minor issue" in normalized_text
+            or "minor problem" in normalized_text
+        ):
+            negative_score = max(
+                0,
+                negative_score - 1,
+            )
+
+        # -----------------------------------------------------
+        # No sentiment signals
         # -----------------------------------------------------
 
         if (
-            model_sentiment == "neutral"
-            and negative_count >= 1
+            negative_score == 0
+            and positive_score == 0
         ):
-
-            return "negative"
-
-        # -----------------------------------------------------
-        # Strong positive domain signal
-        # -----------------------------------------------------
-
-        if (
-            model_sentiment == "neutral"
-            and positive_count >= 1
-        ):
-
-            return "positive"
+            return {
+                "sentiment": "neutral",
+                "confidence": 0.50,
+            }
 
         # -----------------------------------------------------
-        # If the model is already decisive, preserve it.
+        # Negative wins
         # -----------------------------------------------------
 
-        return model_sentiment
+        if negative_score > positive_score:
+
+            confidence = self._calculate_rule_confidence(
+                winning_score=negative_score,
+                losing_score=positive_score,
+            )
+
+            return {
+                "sentiment": "negative",
+                "confidence": confidence,
+            }
+
+        # -----------------------------------------------------
+        # Positive wins
+        # -----------------------------------------------------
+
+        if positive_score > negative_score:
+
+            confidence = self._calculate_rule_confidence(
+                winning_score=positive_score,
+                losing_score=negative_score,
+            )
+
+            return {
+                "sentiment": "positive",
+                "confidence": confidence,
+            }
+
+        # -----------------------------------------------------
+        # Equal positive and negative signals
+        # -----------------------------------------------------
+
+        return {
+            "sentiment": "neutral",
+            "confidence": 0.50,
+        }
 
     # =========================================================
     # Signal matching
@@ -258,11 +292,7 @@ class SentimentService:
             if not normalized_signal:
                 continue
 
-            if (
-                normalized_signal
-                in text
-            ):
-
+            if normalized_signal in text:
                 matches.append(
                     normalized_signal
                 )
@@ -270,59 +300,44 @@ class SentimentService:
         return matches
 
     # =========================================================
-    # Confidence calculation
+    # Confidence
     # =========================================================
 
-    def _calculate_confidence(
-        self,
-        original_confidence: float,
-        original_sentiment: str,
-        adjusted_sentiment: str,
-        text: str,
+    @staticmethod
+    def _calculate_rule_confidence(
+        winning_score: int,
+        losing_score: int,
     ) -> float:
 
-        # No adjustment.
-        if (
-            original_sentiment
-            == adjusted_sentiment
-        ):
+        total = (
+            winning_score
+            + losing_score
+        )
 
-            return round(
-                original_confidence,
-                4,
-            )
+        if total <= 0:
+            return 0.50
 
-        # -----------------------------------------------------
-        # The domain layer changed the model result.
-        #
-        # Do not pretend the rule-based adjustment has the same
-        # certainty as the neural model.
-        #
-        # Use a conservative confidence floor.
-        # -----------------------------------------------------
+        # Base confidence based on how strongly one
+        # sentiment dominates the other.
+        confidence = (
+            winning_score / total
+        )
 
-        if adjusted_sentiment == "negative":
+        # Conservative floor.
+        confidence = max(
+            0.60,
+            confidence,
+        )
 
-            return round(
-                max(
-                    0.60,
-                    original_confidence,
-                ),
-                4,
-            )
-
-        if adjusted_sentiment == "positive":
-
-            return round(
-                max(
-                    0.60,
-                    original_confidence,
-                ),
-                4,
-            )
+        # Cap confidence because this is a
+        # rule-based classifier, not a neural model.
+        confidence = min(
+            0.95,
+            confidence,
+        )
 
         return round(
-            original_confidence,
+            confidence,
             4,
         )
 
