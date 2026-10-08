@@ -2,9 +2,11 @@
 
 # 📌 Project Overview
 
-The **Open-Source Social Listening Platform** is a full-stack application that collects online mentions for user-defined keywords, processes the collected content using NLP techniques, stores structured results in PostgreSQL, and presents analytics and insights through a React dashboard.
+The **Open-Source Social Listening Platform** is a full-stack application that collects online mentions for user-defined keywords, processes the collected content using lightweight NLP techniques, stores structured results in PostgreSQL, and presents analytics and insights through a React dashboard.
 
 The system is designed using a modular architecture so that data collectors, processing services, analytics, AI insights, alerts, and scheduled monitoring can evolve independently.
+
+The current **v1.1.0** architecture uses lightweight NLP components to reduce memory requirements and support low-memory cloud deployment.
 
 ---
 
@@ -29,7 +31,7 @@ The system is designed using a modular architecture so that data collectors, pro
              ┌─────────────┼─────────────┐
              │             │             │
              ▼             ▼             ▼
-         Search APIs   Monitoring APIs  Analytics APIs
+        Search APIs   Monitoring APIs  Analytics APIs
              │             │             │
              └─────────────┼─────────────┘
                            │
@@ -38,12 +40,12 @@ The system is designed using a modular architecture so that data collectors, pro
                 │  Ingestion Service  │
                 └──────────┬──────────┘
                            │
-              ┌────────────┼────────────┐
-              │            │            │
-              ▼            ▼            ▼
-             RSS       Hacker News  Stack Exchange
-              │            │            │
-              └────────────┼────────────┘
+             ┌─────────────┼─────────────┐
+             │             │             │
+             ▼             ▼             ▼
+           RSS        Hacker News   Stack Exchange
+             │             │             │
+             └─────────────┼─────────────┘
                            │
                            ▼
                 ┌─────────────────────┐
@@ -63,7 +65,7 @@ The system is designed using a modular architecture so that data collectors, pro
                            │
                            ▼
                 ┌─────────────────────┐
-                │ NLP Processing      │
+                │ Lightweight NLP     │
                 │                     │
                 │ Sentiment           │
                 │ Topic Classification│
@@ -74,25 +76,26 @@ The system is designed using a modular architecture so that data collectors, pro
                 │     PostgreSQL      │
                 └──────────┬──────────┘
                            │
-              ┌────────────┼─────────────┐
-              │            │             │
-              ▼            ▼             ▼
-          Analytics    AI Insights   Competitors
-              │            │             │
-              └────────────┼─────────────┘
+             ┌─────────────┼─────────────┐
+             │             │             │
+             ▼             ▼             ▼
+         Analytics     AI Insights   Competitors
+             │             │             │
+             └─────────────┼─────────────┘
                            │
                            ▼
-                   React Dashboard
+                    React Dashboard
 ```
 
 ---
 
 # 🖥️ Frontend Architecture
 
-The frontend is built using **React + Vite**.
+The frontend is built using **React + Vite** and is served through Nginx in the Docker production image.
 
 ```text
 frontend/
+
 │
 ├── public/
 │
@@ -127,6 +130,7 @@ frontend/
 ├── Dockerfile
 ├── nginx.conf
 ├── package.json
+├── vercel.json
 └── vite.config.js
 ```
 
@@ -155,6 +159,8 @@ The backend URL is configured using:
 VITE_API_BASE_URL
 ```
 
+For Vercel deployment, the production value points to the deployed Render backend.
+
 ---
 
 # ⚙️ Backend Architecture
@@ -163,6 +169,7 @@ The backend is implemented using **Python, FastAPI, and Uvicorn**.
 
 ```text
 backend/
+
 │
 ├── app/
 │   │
@@ -179,7 +186,6 @@ backend/
 │   │   ├── base.py
 │   │   ├── hackernews.py
 │   │   ├── models.py
-│   │   ├── reddit.py
 │   │   ├── rss.py
 │   │   └── stackexchange.py
 │   │
@@ -225,6 +231,7 @@ The API layer provides REST endpoints for the frontend.
 
 ```text
 api/
+
 ├── searches.py
 ├── mentions.py
 ├── analytics.py
@@ -234,7 +241,7 @@ api/
 └── alerts.py
 ```
 
-### Responsibilities
+## Responsibilities
 
 - Receive frontend requests
 - Validate request data
@@ -292,19 +299,19 @@ Every collected mention passes through the processing pipeline.
                  Raw Collected Data
                          │
                          ▼
-                  Normalization
+                    Normalization
                          │
                          ▼
-               Relevance Filtering
+                Relevance Filtering
                          │
                          ▼
                    Deduplication
                          │
                          ▼
-                Sentiment Analysis
+                 Sentiment Analysis
                          │
                          ▼
-                Topic Classification
+                 Topic Classification
                          │
                          ▼
                 Database Persistence
@@ -344,12 +351,15 @@ Example:
 
 ```text
 Keyword:
+
 Samsung Galaxy S26
 
 Relevant:
+
 "Samsung Galaxy S26 review and specifications"
 
 Not Relevant:
+
 "Samsung washing machine review"
 ```
 
@@ -361,23 +371,26 @@ Only relevant content proceeds to further processing.
 
 The deduplication service prevents duplicate mentions.
 
-It can consider:
+It considers:
 
-- URL similarity
-- Content similarity
+- URL normalization
+- Content normalization
 - Product/model context
+- TF-IDF similarity
 - Existing mentions
+
+The current implementation uses **TF-IDF vectorization and cosine similarity** rather than a transformer embedding model. This reduces memory usage while providing lightweight content-similarity detection.
 
 ```text
 Article A
-       │
-       ├──── Same URL ────┐
-       │                 │
+      │
+      ├──── Same URL ────┐
+      │                  │
 Article B                ▼
                    Duplicate
-                      │
-                      ▼
-                 Store Once
+                       │
+                       ▼
+                   Store Once
 ```
 
 ---
@@ -394,6 +407,8 @@ Negative
 
 The service also produces confidence information.
 
+The current implementation uses a lightweight **rule-based sentiment approach** based on positive and negative linguistic signals.
+
 The results are used by:
 
 - Analytics
@@ -408,14 +423,26 @@ The results are used by:
 The topic service classifies mentions into categories such as:
 
 ```text
+Product
 Pricing
-Features
+Customer Service
+Quality
 Competitors
+Complaints
+Features
 Security
 Other
 ```
 
 Topic confidence is stored with the analysis result.
+
+The current implementation uses:
+
+- TF-IDF vectorization
+- Topic prototype similarity
+- Domain-specific signals
+- Confidence thresholds
+- Priority rules for strong topic signals
 
 ---
 
@@ -466,6 +493,8 @@ Main entities:
 
 Database migrations are managed using **Alembic**.
 
+The Docker backend also initializes the required tables during startup.
+
 ---
 
 # 📊 Analytics Architecture
@@ -483,7 +512,7 @@ Processed Mentions
      ┌──────┼──────────────┐
      │      │              │
      ▼      ▼              ▼
- Sentiment Topics       Sources
+ Sentiment Topics        Sources
      │      │              │
      └──────┼──────────────┘
             │
@@ -539,7 +568,7 @@ Generated information can include:
 - Recommended actions
 - Evidence
 
-If structured LLM output is unavailable, deterministic evidence-based fallback logic can be used.
+If structured LLM output is unavailable or unusable, deterministic evidence-based fallback logic can be used.
 
 ---
 
@@ -549,6 +578,7 @@ The competitor service allows multiple keywords to be compared.
 
 ```text
 Keyword A
+
    │
    ▼
 Search Data
@@ -610,6 +640,8 @@ The system can evaluate changes in:
 - Negative sentiment rate
 - Recent vs previous periods
 
+The alert logic also considers whether sufficient recent and historical data exists before generating an alert.
+
 ---
 
 # ⏰ Scheduled Monitoring Architecture
@@ -620,7 +652,7 @@ The scheduler allows recurring searches.
 Monitoring Configuration
           │
           ▼
-     Scheduler
+      Scheduler
           │
           ▼
    Scheduled Search
@@ -650,6 +682,8 @@ Supported operations:
 - Update
 - Activate / deactivate
 - Delete
+
+The scheduler uses **APScheduler** to execute monitoring jobs.
 
 ---
 
@@ -711,21 +745,31 @@ Example:
 
 ```text
 React Dashboard
+
        │
        │ GET /api/searches/21/analytics
        ▼
+
 FastAPI
+
        │
        ▼
+
 Analytics Service
+
        │
        ▼
+
 PostgreSQL
+
        │
        ▼
+
 Analytics Response
+
        │
        ▼
+
 React Dashboard
 ```
 
@@ -737,11 +781,11 @@ The complete application can be run with Docker Compose.
 
 ```text
 ┌─────────────────────────────────────────────┐
-│               Docker Compose               │
+│              Docker Compose                 │
 │                                             │
 │  ┌─────────────────────────────────────┐    │
 │  │ Frontend                            │    │
-│  │ React + Nginx                       │    │
+│  │ React + Vite + Nginx                │    │
 │  │ Port: 8090                          │    │
 │  └─────────────────┬───────────────────┘    │
 │                    │                        │
@@ -755,11 +799,77 @@ The complete application can be run with Docker Compose.
 │                    ▼                        │
 │  ┌─────────────────────────────────────┐    │
 │  │ PostgreSQL                          │    │
+│  │ PostgreSQL 17                       │    │
 │  │ Port: 5434                          │    │
 │  └─────────────────────────────────────┘    │
 │                                             │
 └─────────────────────────────────────────────┘
 ```
+
+The Docker backend startup sequence initializes the database tables before starting Uvicorn.
+
+The frontend Docker image builds the Vite application and serves the production assets through Nginx.
+
+---
+
+# ☁️ Production Deployment Architecture
+
+The current production deployment uses Vercel for the frontend and Render for the backend and PostgreSQL database.
+
+```text
+                         GitHub
+                           │
+             ┌─────────────┴─────────────┐
+             │                           │
+             ▼                           ▼
+          Vercel                      Render
+             │                           │
+             ▼                           ├──────────────┐
+       React Frontend                    │              │
+                                         ▼              ▼
+                                  FastAPI Backend   PostgreSQL
+                                         │
+                                         │
+                                         ▼
+                                  Public Data Sources
+```
+
+Production frontend:
+
+```text
+https://social-listening-platform-five.vercel.app
+```
+
+Production backend:
+
+```text
+https://social-listening-backend-kqxu.onrender.com
+```
+
+Production API documentation:
+
+```text
+https://social-listening-backend-kqxu.onrender.com/docs
+```
+
+Production health endpoint:
+
+```text
+https://social-listening-backend-kqxu.onrender.com/api/health
+```
+
+The production deployment has been validated for:
+
+- Frontend-to-backend API communication
+- Keyword searches
+- Mention collection
+- Search history
+- Competitor comparison
+- Mentions explorer
+- AI insights
+- Alerts
+- Scheduled monitoring
+- PostgreSQL persistence
 
 ---
 
@@ -780,11 +890,18 @@ test_sentiment.py
 test_topic.py
 ```
 
-The test suite currently reports:
+The final test suite currently reports:
 
 ```text
-24 passed
+25 passed
 ```
+
+The test suite covers:
+
+- Deduplication
+- Relevance filtering
+- Sentiment analysis
+- Topic classification
 
 Additional development and evaluation scripts are located in:
 
@@ -809,7 +926,7 @@ These include tests and evaluation scripts for:
 
 # 🔐 Security and Configuration
 
-Environment-specific configuration is stored locally.
+Environment-specific configuration is stored locally or in deployment platform environment settings.
 
 The repository contains:
 
@@ -830,7 +947,9 @@ __pycache__/
 .pytest_cache/
 ```
 
-Production deployment should additionally use:
+Production configuration uses deployment-platform environment variables for database credentials and other sensitive values.
+
+Recommended production security improvements include:
 
 - HTTPS
 - Secure secret management
@@ -845,7 +964,7 @@ Production deployment should additionally use:
 
 # 🚀 Deployment Architecture
 
-The intended deployment flow is:
+The development and deployment flow is:
 
 ```text
 Developer
@@ -853,20 +972,18 @@ Developer
     ▼
 GitHub Repository
     │
-    ▼
-Docker Build
-    │
-    ├── Frontend Image
-    │
-    ├── Backend Image
-    │
-    └── PostgreSQL
-    │
-    ▼
-Docker Compose / Cloud Environment
-    │
-    ▼
-Running Application
+    ├───────────────────────┐
+    │                       │
+    ▼                       ▼
+Local Docker           Cloud Deployment
+    │                       │
+    ├── Frontend            ├── Vercel
+    ├── Backend             ├── Render Backend
+    └── PostgreSQL          └── Render PostgreSQL
+    │                       │
+    └───────────┬───────────┘
+                ▼
+          Running Application
 ```
 
 ---
@@ -881,9 +998,9 @@ The architecture currently supports:
 - ✅ Stack Exchange
 - ✅ Normalization
 - ✅ Relevance filtering
-- ✅ Deduplication
-- ✅ Sentiment analysis
-- ✅ Topic classification
+- ✅ TF-IDF-based deduplication
+- ✅ Lightweight rule-based sentiment analysis
+- ✅ TF-IDF-based topic classification
 - ✅ PostgreSQL persistence
 - ✅ Analytics
 - ✅ AI-assisted insights
@@ -892,13 +1009,23 @@ The architecture currently supports:
 - ✅ Scheduled monitoring
 - ✅ Search history
 - ✅ React dashboard
+- ✅ FastAPI REST API
 - ✅ Docker Compose
+- ✅ Vercel deployment
+- ✅ Render deployment
+- ✅ Production PostgreSQL
 - ✅ Automated testing
 
 Current backend test status:
 
 ```text
-24 / 24 tests passing
+25 / 25 tests passing
+```
+
+Current release:
+
+```text
+v1.1.0
 ```
 
 ---
@@ -917,9 +1044,9 @@ Possible improvements include:
 - Role-based access control
 - API rate limiting
 - Distributed processing
-- Cloud deployment
 - Centralized logging
 - Application monitoring
 - CI/CD pipelines
 - Horizontal scaling
 - More advanced LLM insight generation
+- Improved frontend code splitting and performance optimization

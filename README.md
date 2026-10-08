@@ -4,6 +4,8 @@ An open-source **social listening and mention analysis platform** that collects 
 
 The platform provides a modern **React dashboard** backed by a **FastAPI REST API** and **PostgreSQL database**, with complete **Docker Compose** support.
 
+The application is also deployed using **Vercel** for the frontend and **Render** for the backend and PostgreSQL database.
+
 ---
 
 # 📌 Project Overview
@@ -16,7 +18,11 @@ A user enters a keyword such as:
 Samsung Galaxy S26
 ```
 
-The platform collects relevant content from supported public sources such as **RSS feeds, Hacker News, and Stack Exchange**.
+The platform collects relevant content from supported public sources such as:
+
+- RSS feeds
+- Hacker News
+- Stack Exchange
 
 The collected content then passes through a processing pipeline:
 
@@ -65,6 +71,7 @@ React Dashboard
 - ⚛️ React + Vite frontend
 - 🐳 Docker Compose deployment
 - 🧪 Automated backend testing
+- ☁️ Cloud deployment with Vercel and Render
 
 ---
 
@@ -75,14 +82,17 @@ React Dashboard
 - Filters irrelevant content before deeper processing.
 - Removes duplicate mentions.
 - Performs sentiment classification with confidence scores.
-- Classifies mentions into meaningful topics.
+- Classifies mentions into meaningful topics with confidence scores.
 - Provides source, sentiment, topic, and time-based analytics.
 - Provides competitor comparison for multiple keywords.
 - Includes scheduled monitoring for recurring searches.
 - Generates evidence-based AI-assisted insights.
-- Includes deterministic fallback logic when structured local LLM output is unavailable.
+- Uses deterministic fallback logic when structured local LLM output is unavailable.
+- Uses lightweight NLP techniques to reduce memory requirements.
 - Provides a complete Dockerized development environment.
-- Backend automated test suite currently has **24/24 tests passing**.
+- Includes automated backend tests.
+- Deployed frontend and backend are available online.
+- Current release: **v1.1.0**
 
 ---
 
@@ -94,8 +104,10 @@ React Dashboard
 - Vite
 - JavaScript
 - CSS
-- Axios / REST API integration
+- Axios
+- REST API integration
 - ESLint
+- Nginx
 
 ## Backend
 
@@ -108,7 +120,7 @@ React Dashboard
 
 ## Database
 
-- PostgreSQL
+- PostgreSQL 17
 
 ## Data Collection
 
@@ -116,7 +128,7 @@ React Dashboard
 - Hacker News
 - Stack Exchange
 
-Configured RSS sources include:
+### Configured RSS Sources
 
 - TechCrunch
 - The Verge
@@ -125,17 +137,45 @@ Configured RSS sources include:
 
 ## NLP & AI
 
-- Sentence Transformers
-- Hugging Face Transformers
-- Sentiment classification
-- Embedding-based topic classification
-- Local LLM / AI-assisted insight generation
+The current implementation uses lightweight NLP techniques designed to reduce memory usage during deployment.
 
-## DevOps
+### Deduplication
+
+- URL normalization
+- Content normalization
+- Product/model conflict detection
+- TF-IDF vectorization
+- Cosine similarity
+
+### Sentiment Analysis
+
+- Rule-based sentiment classification
+- Positive / Neutral / Negative classification
+- Confidence scoring
+- Positive and negative signal detection
+
+### Topic Classification
+
+- TF-IDF vectorization
+- Topic prototype similarity
+- Domain-specific signals
+- Confidence thresholding
+- Topics such as Pricing, Features, Competitors, Security, Complaints, Quality, Customer Service, and Other
+
+### AI Insights
+
+- Evidence-based statistical analysis
+- Local LLM integration
+- Structured insight generation
+- Deterministic fallback logic when structured LLM output is unavailable
+
+## DevOps & Deployment
 
 - Docker
 - Docker Compose
 - Nginx
+- Vercel
+- Render
 
 ## Testing
 
@@ -147,6 +187,7 @@ Configured RSS sources include:
 
 ```text
 social-listening-platform/
+
 │
 ├── backend/
 │   ├── app/
@@ -163,7 +204,6 @@ social-listening-platform/
 │   │   │   ├── base.py
 │   │   │   ├── hackernews.py
 │   │   │   ├── models.py
-│   │   │   ├── reddit.py
 │   │   │   ├── rss.py
 │   │   │   └── stackexchange.py
 │   │   │
@@ -210,9 +250,22 @@ social-listening-platform/
 │   ├── Dockerfile
 │   ├── nginx.conf
 │   ├── package.json
+│   ├── vercel.json
 │   └── vite.config.js
 │
+├── docs/
+│   └── screenshots/
+│       ├── alerts.png
+│       ├── competitors.png
+│       ├── dashboard.png
+│       ├── history.png
+│       ├── insights.png
+│       ├── landing.png
+│       ├── mentions.png
+│       └── monitoring.png
+│
 ├── .env.example
+├── .gitattributes
 ├── .gitignore
 ├── ARCHITECTURE.md
 ├── docker-compose.yml
@@ -237,7 +290,7 @@ cd social-listening-platform
 
 # 🐳 Run with Docker
 
-Docker Compose is the recommended way to run the complete application.
+Docker Compose is the recommended way to run the complete application locally.
 
 ```bash
 docker compose up -d --build
@@ -255,31 +308,82 @@ Stop the application:
 docker compose down
 ```
 
-### Application URLs
+## Application URLs
 
-Frontend:
+### Frontend
 
 ```text
 http://localhost:8090
 ```
 
-Backend:
+### Backend
 
 ```text
 http://127.0.0.1:8000
 ```
 
-FastAPI Swagger documentation:
+### FastAPI Swagger Documentation
 
 ```text
 http://127.0.0.1:8000/docs
 ```
 
-PostgreSQL is exposed locally through port:
+### PostgreSQL
+
+PostgreSQL is exposed locally through:
 
 ```text
 5434
 ```
+
+---
+
+# ☁️ Production Deployment
+
+The application is deployed using:
+
+```text
+Frontend
+   ↓
+Vercel
+
+Backend
+   ↓
+Render
+
+Database
+   ↓
+Render PostgreSQL
+```
+
+## Production Frontend
+
+https://social-listening-platform-five.vercel.app
+
+## Production Backend
+
+https://social-listening-backend-kqxu.onrender.com
+
+## Production API Documentation
+
+https://social-listening-backend-kqxu.onrender.com/docs
+
+## Production Health Check
+
+https://social-listening-backend-kqxu.onrender.com/api/health
+
+The production deployment was tested with:
+
+- Frontend → Backend API communication
+- Keyword search
+- Mention collection
+- Search history
+- Competitor comparison
+- Mentions explorer
+- AI insights
+- Alerts
+- Scheduled monitoring
+- PostgreSQL persistence
 
 ---
 
@@ -289,15 +393,27 @@ PostgreSQL is exposed locally through port:
 
 ```powershell
 cd backend
+```
 
+Create a virtual environment:
+
+```powershell
 python -m venv venv
+```
 
+Activate it:
+
+```powershell
 venv\Scripts\activate
+```
 
+Install dependencies:
+
+```powershell
 pip install -r requirements.txt
 ```
 
-Configure your environment using the provided:
+Configure your environment using:
 
 ```text
 .env.example
@@ -323,15 +439,23 @@ http://127.0.0.1:8000/docs
 
 ---
 
-## Frontend Setup
+# 💻 Frontend Setup
 
 Open another terminal:
 
 ```powershell
 cd frontend
+```
 
+Install dependencies:
+
+```powershell
 npm install
+```
 
+Run the development server:
+
+```powershell
 npm run dev
 ```
 
@@ -346,51 +470,48 @@ http://localhost:5173
 # 🔄 Application Workflow
 
 ```text
-Enter Keyword
-      │
-      ▼
-Create Search
-      │
-      ▼
-Collect Online Mentions
-      │
-      ├───────────────┐
-      │               │
-      ▼               ▼
-     RSS        Hacker News
-      │               │
-      └───────┬───────┘
-              │
-              ▼
-       Stack Exchange
-              │
-              ▼
-       Normalize Data
-              │
-              ▼
-    Relevance Filtering
-              │
-              ▼
-       Deduplication
-              │
-              ▼
-      Sentiment Analysis
-              │
-              ▼
-     Topic Classification
-              │
-              ▼
-        PostgreSQL
-              │
-       ┌──────┼─────────┐
-       │      │         │
-       ▼      ▼         ▼
-   Analytics Insights Competitors
-       │      │         │
-       └──────┼─────────┘
-              │
-              ▼
-        React Dashboard
+                    User enters keyword
+                           │
+                           ▼
+                     Create Search
+                           │
+                           ▼
+                  Collect Online Mentions
+                           │
+             ┌─────────────┼─────────────┐
+             │             │             │
+             ▼             ▼             ▼
+           RSS        Hacker News   Stack Exchange
+             │             │             │
+             └─────────────┼─────────────┘
+                           │
+                           ▼
+                    Normalize Data
+                           │
+                           ▼
+                  Relevance Filtering
+                           │
+                           ▼
+                     Deduplication
+                           │
+                           ▼
+                   Sentiment Analysis
+                           │
+                           ▼
+                   Topic Classification
+                           │
+                           ▼
+                      PostgreSQL
+                           │
+             ┌─────────────┼─────────────┐
+             │             │             │
+             ▼             ▼             ▼
+         Analytics     AI Insights   Competitors
+             │             │             │
+             └─────────────┼─────────────┘
+                           │
+                           ▼
+                     React Dashboard
 ```
 
 ---
@@ -426,16 +547,23 @@ Example:
 
 ```text
 Keyword:
+
 Samsung Galaxy S26
+```
 
 Relevant:
+
+```text
 "Samsung Galaxy S26 review and specifications"
+```
 
 Not Relevant:
+
+```text
 "Samsung washing machine review"
 ```
 
-Only relevant mentions continue through the processing pipeline.
+Only relevant mentions continue through the deeper processing pipeline.
 
 ---
 
@@ -443,20 +571,24 @@ Only relevant mentions continue through the processing pipeline.
 
 The deduplication service prevents the same mention from being stored multiple times.
 
-Duplicate detection can consider:
+Duplicate detection considers:
 
-- URL similarity
-- Content similarity
+- URL normalization
+- Content normalization
 - Product/model context
-- Existing database records
+- TF-IDF similarity
+- Existing mentions
 
 Example:
 
 ```text
 Article A
+
 https://example.com/article
 
+
 Article B
+
 https://example.com/article
 
         ↓
@@ -467,6 +599,8 @@ Duplicate detected
 
 Stored once
 ```
+
+The current implementation uses **TF-IDF + cosine similarity** rather than a large transformer embedding model. This reduces memory consumption and makes the application more suitable for low-memory deployment environments.
 
 ---
 
@@ -486,11 +620,15 @@ Example:
 
 ```text
 Sentiment:
+
 Positive
 
 Confidence:
+
 0.91
 ```
+
+The current sentiment implementation uses a lightweight rule-based approach based on positive and negative linguistic signals.
 
 Sentiment data is used by:
 
@@ -506,9 +644,13 @@ Sentiment data is used by:
 Mentions are classified into topics such as:
 
 ```text
+Product
 Pricing
-Features
+Customer Service
+Quality
 Competitors
+Complaints
+Features
 Security
 Other
 ```
@@ -525,6 +667,14 @@ Topic: Pricing
 
 Topic confidence is also stored for analyzed mentions.
 
+The current implementation uses:
+
+- TF-IDF vectorization
+- Topic prototype similarity
+- Domain-specific keyword signals
+- Confidence thresholds
+- Priority rules for strong topic signals
+
 ---
 
 # 📊 Analytics
@@ -539,17 +689,19 @@ The analytics system provides:
 - First mention timestamp
 - Latest mention timestamp
 
-Example development result:
+Example development/test result:
 
 ```text
 Total Mentions: 8
 
 Sentiment:
+
 Positive: 6
 Negative: 1
 Neutral: 1
 
 Topics:
+
 Competitors: 4
 Pricing: 2
 Features: 1
@@ -595,7 +747,9 @@ Structured Insights
 React Dashboard
 ```
 
-When the local LLM does not return usable structured JSON, the application can use deterministic evidence-based fallback logic.
+The system is designed to remain usable even when a local LLM does not return valid structured JSON.
+
+In that situation, deterministic evidence-based fallback logic is used to generate useful insights from the available mention data.
 
 ---
 
@@ -607,7 +761,9 @@ Example:
 
 ```text
 Samsung Galaxy S26
+
         VS
+
 Google Pixel
 ```
 
@@ -620,13 +776,15 @@ Comparison metrics include:
 - Engagement
 - Negative mentions
 
+Example comparison data can be generated directly from the platform's collected and processed mentions.
+
 ---
 
 # 🔔 Alerts
 
 The alerts module analyzes recent mention activity.
 
-It can evaluate:
+It evaluates:
 
 - Recent mention volume
 - Recent negative mentions
@@ -651,6 +809,8 @@ Previous Period Comparison
 Alert Evaluation
 ```
 
+The system can determine whether sufficient recent and historical data exists before generating an alert.
+
 ---
 
 # ⏰ Scheduled Monitoring
@@ -661,19 +821,27 @@ Example:
 
 ```text
 Keyword:
+
 Samsung Galaxy S26
 
 Interval:
+
 1440 minutes
 
         ↓
 
 Scheduled Search
+
         ↓
+
 Collect Mentions
+
         ↓
+
 Process Mentions
+
         ↓
+
 Update Database
 ```
 
@@ -684,6 +852,8 @@ Monitoring supports:
 - Update
 - Activate / deactivate
 - Delete
+
+The scheduler uses APScheduler to execute monitoring jobs.
 
 ---
 
@@ -711,6 +881,10 @@ Interactive API documentation:
 http://127.0.0.1:8000/docs
 ```
 
+Production API documentation:
+
+https://social-listening-backend-kqxu.onrender.com/docs
+
 ---
 
 # 🗄️ Database
@@ -725,6 +899,24 @@ mentions
 mention_analysis
 ```
 
+### searches
+
+Stores keyword search information and search status.
+
+### mentions
+
+Stores collected and normalized online mentions.
+
+### mention_analysis
+
+Stores processed analysis such as:
+
+- Relevance
+- Sentiment
+- Sentiment confidence
+- Topic
+- Topic confidence
+
 Database migrations are managed using Alembic.
 
 Example:
@@ -732,6 +924,8 @@ Example:
 ```bash
 alembic upgrade head
 ```
+
+The application also initializes required database tables during Docker backend startup.
 
 ---
 
@@ -746,14 +940,13 @@ backend/tests/
 Run:
 
 ```powershell
-cd backend
-pytest -v
+pytest backend/tests -q
 ```
 
 Current result:
 
 ```text
-24 passed
+25 passed
 ```
 
 The test suite covers:
@@ -768,6 +961,19 @@ Additional development and evaluation scripts are stored in:
 ```text
 backend/evaluation/
 ```
+
+These scripts were used during development to evaluate:
+
+- RSS collection
+- Relevance
+- Deduplication
+- Sentiment
+- Topic classification
+- Hacker News collection
+- Stack Exchange collection
+- End-to-end processing
+- Search services
+- NLP behavior
 
 ---
 
@@ -793,10 +999,31 @@ backend/evaluation/
 │                     ▼                       │
 │   ┌─────────────────────────────────────┐   │
 │   │ PostgreSQL                          │   │
+│   │ PostgreSQL 17                       │   │
 │   │ localhost:5434                      │   │
 │   └─────────────────────────────────────┘   │
 │                                             │
 └─────────────────────────────────────────────┘
+```
+
+The frontend Docker image uses:
+
+```text
+Node.js
+   ↓
+Vite production build
+   ↓
+Nginx
+```
+
+The backend uses:
+
+```text
+Python 3.13
+   ↓
+FastAPI
+   ↓
+Uvicorn
 ```
 
 ---
@@ -825,6 +1052,8 @@ __pycache__/
 ```
 
 are excluded through `.gitignore`.
+
+Production database credentials and other secrets are stored in the deployment platform environment configuration rather than committed to Git.
 
 ---
 
@@ -888,8 +1117,8 @@ are excluded through `.gitignore`.
 - ✅ Data normalization
 - ✅ Relevance filtering
 - ✅ Deduplication
-- ✅ Sentiment analysis
-- ✅ Topic classification
+- ✅ Lightweight sentiment analysis
+- ✅ Lightweight topic classification
 - ✅ PostgreSQL persistence
 - ✅ Analytics
 - ✅ AI-assisted insights
@@ -898,15 +1127,28 @@ are excluded through `.gitignore`.
 - ✅ Scheduled monitoring
 - ✅ Search history
 - ✅ React dashboard
+- ✅ FastAPI REST API
 - ✅ Docker Compose
+- ✅ Nginx frontend serving
 - ✅ Backend API validation
 - ✅ Automated backend testing
 - ✅ GitHub repository
+- ✅ Vercel frontend deployment
+- ✅ Render backend deployment
+- ✅ Render PostgreSQL deployment
+- ✅ Production API integration
+- ✅ Production feature validation
 
 ### Test Status
 
 ```text
-24 / 24 backend tests passing
+25 / 25 backend tests passing
+```
+
+### Current Release
+
+```text
+v1.1.0
 ```
 
 ---
@@ -922,12 +1164,12 @@ are excluded through `.gitignore`.
 - Role-based access control
 - Background task queues
 - Redis caching
-- Cloud deployment
 - CI/CD pipeline
 - Production monitoring
 - Advanced LLM insights
 - API rate limiting
 - Horizontal scaling
+- Improved frontend code splitting and performance optimization
 
 ---
 
@@ -937,7 +1179,7 @@ are excluded through `.gitignore`.
 
 B.Tech – Computer Science and Engineering
 
-Passionate about:
+Interested in:
 
 - Full Stack Development
 - Python
@@ -962,6 +1204,29 @@ If you find this project useful, consider giving the repository a ⭐ on GitHub.
 
 Repository:
 
-```text
 https://github.com/MdNvD/social-listening-platform
+
+---
+
+# 📌 Release
+
+Current stable release:
+
+```text
+v1.1.0
 ```
+
+The `v1.1.0` release includes:
+
+- Lightweight NLP implementation
+- TF-IDF-based deduplication
+- TF-IDF-based topic classification
+- Rule-based sentiment analysis
+- Low-memory deployment optimization
+- Production frontend API configuration
+- Vercel SPA routing
+- Render backend deployment
+- PostgreSQL production deployment
+- Dockerized frontend/backend
+- Automated testing
+- Production validation
